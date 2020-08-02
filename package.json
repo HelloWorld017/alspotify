@@ -1,0 +1,32 @@
+{
+  "name": "alspotify",
+  "version": "1.0.0",
+  "description": "Show alsong lyric on spotify",
+  "main": "app/index.js",
+  "scripts": {
+    "start": "qode ./app/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HelloWorld017/alspotify.git"
+  },
+  "keywords": [
+    "alsong",
+    "spotify"
+  ],
+  "author": "Khinenw",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/HelloWorld017/alspotify/issues"
+  },
+  "homepage": "https://github.com/HelloWorld017/alspotify#readme",
+  "dependencies": {
+    "@nodegui/nodegui": "^0.24.0",
+    "alsong": "^2.0.1",
+    "cors": "^2.8.5",
+    "deepmerge": "^4.2.2",
+    "displays": "^1.1.4",
+    "express": "^4.17.1"
+  }
+}
