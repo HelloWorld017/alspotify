@@ -53,7 +53,7 @@ class LyricItem extends QLabel {
 				if(!this.isVisible())
 					this.show();
 
-				const boundingRect = this.fontMetrics.boundingRect(currentLyric[j]);
+				const boundingRect = this.fontMetrics.boundingRect(currentLyric);
 				const elideWidth = config.style.lyric.width - 20;
 
 				if(boundingRect.width() > elideWidth) {

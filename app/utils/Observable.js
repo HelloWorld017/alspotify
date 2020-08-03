@@ -22,7 +22,7 @@ class Observable {
 		return {
 			$observe: () => this.observe.bind(this),
 
-			$set(target) {
+			$set: target => {
 				return value => {
 					for(const key in target) {
 						delete target[key];
@@ -32,17 +32,23 @@ class Observable {
 						target[key] = value[key];
 					}
 
-					observers['#'].forEach(observer => observer());
+					this.callObservers(observers);
 				};
 			},
 
-			$assign(target) {
+			$assign: target => {
 				return value => {
 					Object.assign(target, value);
-					observers['#'].forEach(observer => observer());
+					this.callObservers(observers);
 				};
 			}
 		};
+	}
+
+	callObservers(observers) {
+		observers['#'].forEach(observer => {
+			this.observe(observer);
+		});
 	}
 
 	hookProperty(hookTarget, observers = this.observers) {
@@ -82,9 +88,9 @@ class Observable {
 
 			set: (target, name, value) => {
 				target[name] = value;
-				
+
 				if(observers[name])
-					observers[name]['#'].forEach(observer => observer());
+					this.callObservers(observers[name]);
 
 				return true;
 			}

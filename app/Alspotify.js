@@ -1,7 +1,7 @@
 const alsong = require('alsong');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const config = require('./utils/Config');
+const config = require('./utils/Config')();
 const express = require('express');
 const observable = require('./utils/Observable');
 
@@ -45,27 +45,27 @@ class Alspotify {
 		this.info.$observe(() => {
 			this.updateProgress();
 		});
-		setInterval(() => this.tick(), 100);
+		setInterval(() => this.tick(), 50);
 	}
 
 	tick() {
 		this.info.progress = Math.min(
 			this.info.duration,
-			this.info.progress + 100
+			this.info.progress + 50
 		);
 	}
 
 	async update(body) {
+		if(typeof body.timestamp !== 'number' || !isFinite(body.timestamp))
+			return;
+
+		if(Math.abs(body.timestamp - Date.now()) > 5000)
+			return;
+
 		if(!body.playing) {
 			this.info.playing = false;
 			return;
 		}
-
-		if(typeof body.title !== 'string' || typeof body.artist !== 'string')
-			return;
-
-		if(typeof body.duration !== 'number' || !isFinite(body.duration) || body.duration < 0)
-			return;
 
 		if(
 			typeof body.progress !== 'number' ||
@@ -73,6 +73,17 @@ class Alspotify {
 			body.progress < 0 ||
 			body.progress > body.duration
 		)
+			return;
+
+		body.progress += Date.now() - body.timestamp;
+		body.progress = Math.max(0, Math.min(body.duration, body.progress));
+
+		if(typeof body.title !== 'string' || typeof body.artist !== 'string') {
+			this.info.progress = body.progress;
+			return;
+		}
+
+		if(typeof body.duration !== 'number' || !isFinite(body.duration) || body.duration < 0)
 			return;
 
 		this.info.$assign({
@@ -85,7 +96,7 @@ class Alspotify {
 
 		if(body.uri && body.uri !== this.lastUri) {
 			this.lastUri = body.uri;
-			await this.updateLyric(body.lyric);
+			await this.updateLyric(body.lyrics);
 		}
 	}
 
@@ -102,7 +113,7 @@ class Alspotify {
 					return;
 				}
 
-				lyrics.push(spotifyLyric);
+				lyrics.push({ lyric: spotifyLyric });
 			}
 
 			//TODO change fetch algorithm
@@ -118,7 +129,7 @@ class Alspotify {
 			};
 			this.lastUpdate = -1;
 
-			console.log(`Retrieved lyric: ${artist} - ${title}`);
+			console.log(`Retrieved lyric: ${this.info.artist} - ${this.info.title}`);
 		} catch(e) {
 			console.error(`Error while retrieving lyric: ${e}`);
 		}

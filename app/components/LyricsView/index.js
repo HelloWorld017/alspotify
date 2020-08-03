@@ -19,6 +19,7 @@ class LyricsView extends QWidget {
 			this.lyrics = [];
 
 			const layout = new QBoxLayout(Direction.TopToBottom);
+			this.setLayout(layout);
 
 			for(let i = 0; i < config.lyric.count; i++) {
 				const lyric = new LyricItem(i);
