@@ -1,11 +1,13 @@
 const deepmerge = require('deepmerge');
 const displays = require('displays')();
 const fs = require('fs');
+const observable = require('./Observable');
 
 class Config {
 	constructor() {
 		this.config = {};
-		this.initialized = false;;
+		this.initialized = false;
+		this.observable = null;
 	}
 
 	init() {
@@ -23,6 +25,7 @@ class Config {
 			this.save();
 		}
 
+		this.observable = observable.init('config', this.config);
 		this.initialized = true;
 	}
 
@@ -55,7 +58,8 @@ class Config {
 			},
 
 			lyric: {
-				count: 3
+				count: 3,
+				overflow: 'none' // 'elide' or 'wrap' or 'none'
 			},
 
 			windowPosition: {
@@ -69,7 +73,8 @@ class Config {
 }
 
 const config = new Config();
+
 module.exports = () => {
 	config.init();
-	return config.config;
+	return config.observable;
 };
