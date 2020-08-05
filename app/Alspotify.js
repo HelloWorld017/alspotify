@@ -5,6 +5,9 @@ const config = require('./utils/Config')();
 const express = require('express');
 const observable = require('./utils/Observable');
 
+const { QApplication } = require("@nodegui/nodegui");
+
+
 class Alspotify {
 	constructor() {
 		this.info = observable.init('api', {});
@@ -29,7 +32,8 @@ class Alspotify {
 		});
 
 		app.post('/shutdown', (req, res) => {
-
+			const qApp = QApplication.instance();
+			qApp.quit();
 		});
 
 		this.app = app;
@@ -49,10 +53,12 @@ class Alspotify {
 	}
 
 	tick() {
-		this.info.progress = Math.min(
-			this.info.duration,
-			this.info.progress + 50
-		);
+		if(this.info.playing) {
+			this.info.progress = Math.min(
+				this.info.duration,
+				this.info.progress + 50
+			);
+		}
 	}
 
 	async update(body) {
@@ -166,3 +172,4 @@ module.exports = () => {
 
 	return api.info;
 };
+module.exports.alspotify = api;
