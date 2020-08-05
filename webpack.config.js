@@ -2,7 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-
+const TerserPlugin = require('terser-webpack-plugin');
 
 const nodeEnv = (process.env.NODE_ENV || 'development').trim();
 
@@ -30,6 +30,16 @@ module.exports = {
 				options: {
 					name: '[name].[ext]'
 				}
+			},
+
+			{
+				test: /\.(png|jpe?g|gif|woff2?|otf|ttf|eot)(\?|#.*)?$/,
+				loader: 'file-loader',
+				options: {
+					name: 'assets/[name]-[hash:8].[ext]',
+					publicPath: './dist',
+					esModule: false
+				}
 			}
 		]
 	},
@@ -55,3 +65,20 @@ module.exports = {
 		minimize: false
 	}
 };
+
+if(nodeEnv === 'production') {
+	module.exports.optimization = {
+		minimizer: [
+			new TerserPlugin({
+				cache: true,
+				parallel: true,
+				extractComments: 'all',
+				terserOptions: {
+					compress: {
+						reduce_vars: false
+					}
+				}
+			})
+		]
+	}
+}

@@ -7,6 +7,8 @@ const {
 	QPixmap
 } = require('@nodegui/nodegui');
 
+const IconMusicPicture = require('../../assets/IconMusic.png');
+
 
 class IconMusic extends QLabel {
 	constructor() {
@@ -17,7 +19,7 @@ class IconMusic extends QLabel {
 			padding: 0 5px;
 		`);
 
-		const iconImage = new QPixmap('assets/IconMusic.png');
+		const iconImage = new QPixmap(IconMusicPicture);
 
 		config.$observe(() => {
 			const iconScaled = iconImage.scaled(
