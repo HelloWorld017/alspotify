@@ -108,25 +108,14 @@ class Alspotify {
 
 	async updateLyric(spotifyLyric) {
 		try {
-			const lyrics = await alsong(this.info.artist, this.info.title);
-			if(lyrics.length === 0) {
-				if(typeof spotifyLyric !== 'object' || Object.keys(spotifyLyric).length === 0) {
-					this.info.lyric = {
-						timestamp: {},
-						lyric: []
-					};
-
-					return;
-				}
-
-				lyrics.push({ lyric: spotifyLyric });
-			}
+			const lyricData = await alsong(this.info.artist, this.info.title);
+			const lyrics = await alsong.getLyricById(lyricData[0].lyricId);
 
 			//TODO change fetch algorithm
 			//     For example, select longest one between lyrics,
 			//     which last lyric timestamp is smaller than duration
 
-			const lyric = lyrics[0].lyric;
+			const lyric = lyrics.lyric;
 
 			const timestamp = Object.keys(lyric).sort((v1, v2) => parseInt(v1) - parseInt(v2));
 			this.info.lyric = {
@@ -147,9 +136,6 @@ class Alspotify {
 
 		let i = 0;
 		for(; i < this.info.lyric.timestamp.length; i++) {
-			if(i + 1 >= this.info.lyric.timestamp.length)
-				continue;
-
 			if(this.info.lyric.timestamp[i + 1] > this.info.progress)
 				break;
 		}
