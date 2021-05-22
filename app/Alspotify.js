@@ -108,12 +108,8 @@ class Alspotify {
 
 	async updateLyric(spotifyLyric) {
 		try {
-			const lyricData = await alsong(this.info.artist, this.info.title);
+			const lyricData = await alsong(this.info.artist, this.info.title, { playtime: Number(this.info.duration) });
 			const lyrics = await alsong.getLyricById(lyricData[0].lyricId);
-
-			//TODO change fetch algorithm
-			//     For example, select longest one between lyrics,
-			//     which last lyric timestamp is smaller than duration
 
 			const lyric = lyrics.lyric;
 
