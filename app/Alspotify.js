@@ -111,6 +111,19 @@ class Alspotify {
 			const lyricData = await alsong(this.info.artist, this.info.title, { playtime: Number(this.info.duration) });
 			const lyrics = await alsong.getLyricById(lyricData[0].lyricId);
 
+			if(lyrics.length === 0) {
+				if(typeof spotifyLyric !== 'object' || Object.keys(spotifyLyric).length === 0) {
+					this.info.lyric = {
+						timestamp: {},
+						lyric: []
+					};
+
+					return;
+				}
+
+				lyrics.lyric = spotifyLyric;
+			}
+
 			const lyric = lyrics.lyric;
 
 			const timestamp = Object.keys(lyric).sort((v1, v2) => parseInt(v1) - parseInt(v2));
