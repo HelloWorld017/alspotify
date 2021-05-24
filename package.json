@@ -7,7 +7,7 @@
     "start": "qode ./app/entrypoint.js",
     "build": "cross-env NODE_ENV=production webpack",
     "dist": "npm run build && npm run pack",
-    "pack": "nodegui-packer --pack .\\dist",
+    "pack": "nodegui-packer --pack ./dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -25,8 +25,8 @@
   },
   "homepage": "https://github.com/HelloWorld017/alspotify#readme",
   "dependencies": {
-    "@nodegui/nodegui": "^0.24.0",
-    "alsong": "^2.0.1",
+    "@nodegui/nodegui": "^0.30.2",
+    "alsong": "^3.0.0",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "deepmerge": "^4.2.2",
