@@ -45,7 +45,7 @@ class Alspotify {
 			return;
 
 		this.initialized = true;
-		this.app.listen(29192);
+		this.app.listen(29192, 'localhost');
 		this.info.$observe(() => {
 			this.updateProgress();
 		});
