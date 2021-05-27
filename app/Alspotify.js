@@ -108,26 +108,19 @@ class Alspotify {
 
 	async updateLyric(spotifyLyric) {
 		try {
-			const lyricData = await alsong(this.info.artist, this.info.title, { playtime: Number(this.info.duration) });
-			let lyrics;
-			try {
-				lyrics = await alsong.getLyricById(lyricData[0].lyricId);
-			} catch {
-				if(typeof spotifyLyric !== 'object' || Object.keys(spotifyLyric).length === 0) {
-					this.info.lyric = {
-						timestamp: {},
-						lyric: []
-					};
-					return;
-				}
-
-				lyrics = {
-					lyric: spotifyLyric,
-				};
-			}
-
-			const lyric = lyrics.lyric;
-
+			const lyric = await (
+				alsong(this.info.artist, this.info.title, { playtime: Number(this.info.duration) })
+					.then(lyricItems => alsong.getLyricById(lyricItems[0].lyricId))
+					.then(lyricData => lyricData.lyric)
+					.catch(err => {
+						if (typeof spotifyLyric !== 'object') {
+							return {};
+						}
+						
+						return spotifyLyric;
+					})
+			);
+			
 			const timestamp = Object.keys(lyric).sort((v1, v2) => parseInt(v1) - parseInt(v2));
 			this.info.lyric = {
 				timestamp,
