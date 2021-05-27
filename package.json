@@ -26,7 +26,7 @@
   "homepage": "https://github.com/HelloWorld017/alspotify#readme",
   "dependencies": {
     "@nodegui/nodegui": "^0.30.2",
-    "alsong": "^3.0.0",
+    "alsong": "^3.0.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "deepmerge": "^4.2.2",
