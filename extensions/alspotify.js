@@ -4,28 +4,47 @@
 
 
 (function Alspotify() {
-	const getLyric = () => new Promise((resolve, reject) => {
+	const LyricResolvers = {
+		v1(uri) {
+			return new Promise((resolve, reject) => {
+				Spicetify.CosmosAPI.resolver.get(
+					`hm://lyrics/v1/track/${uri.getBase62Id()}`,
+					(err, payload) => {
+						if(err) {
+							resolve([]);
+							return;
+						}
+
+						const result = payload.getJSONBody();
+						resolve(result.lines);
+					}
+				);
+			});
+		},
+		
+		v2(uri) {
+			return Spicetify.CosmosAsync
+				.get(`hm://lyrics/v1/track/${uri.getBase62Id()}`)
+				.then(payload => payload.lines)
+				.catch(err => {
+					return [];
+				});
+		},
+		
+		get current() {
+			return this[Spicetify.CosmosAsync ? 'v2' : 'v1'];
+		}
+	};
+	
+	const getLyric = async () => {
 		const uri = Spicetify.URI.from(Spicetify.Player.data.track.uri);
-		Spicetify.CosmosAPI.resolver.get(
-			`hm://lyrics/v1/track/${uri.getBase62Id()}`,
-			(err, payload) => {
-				if(err) {
-					resolve({});
-					return;
-				}
-
-				const result = payload.getJSONBody();
-				const lyrics = result.lines.reduce((lyric, line) => {
-					lyric[line.time] = line.words.map(v => v.string).filter(v => v);
-					return lyric;
-				}, {});
-
-				resolve(lyrics);
-			}
-		);
-	});
-
-
+		const lines = await LyricResolvers.current(uri);
+		return lines.reduce((lyric, line) => {
+			lyric[line.time] = line.words.map(v => v.string).filter(v => v);
+			return lyric;
+		}, {});
+	};
+	
 	let previousInfo = {};
 	const getInfo = async () => {
 		if(!Spicetify.Player.isPlaying()) {
