@@ -31,7 +31,7 @@
     "cors": "^2.8.5",
     "deepmerge": "^4.2.2",
     "displays": "^1.1.4",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "nodegui-plugin-metrics": "^1.0.1"
   },
   "devDependencies": {
