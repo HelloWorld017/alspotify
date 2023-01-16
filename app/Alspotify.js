@@ -13,6 +13,8 @@ class Alspotify {
 		this.info = observable.init('api', {});
 		this.lastUri = null;
 		this.lastUpdate = -1;
+		this.lastFetch = -1;
+		this.titleRegex = /(?:[\[\(\{\【]([^\]\)\}\】]+)[\]\)\}\】]\s*)*([^\[\(\{\【\「\]\)\}\】\」\-\/]+)(?:[\[\(\{\【]([^\]\)\}\】]+)[\]\)\}\】]\s*)*/g;
 
 		const app = express();
 		app.use(cors());
@@ -45,7 +47,7 @@ class Alspotify {
 			return;
 
 		this.initialized = true;
-		this.app.listen(29192, 'localhost');
+		this.app.listen(1608, 'localhost');
 		this.info.$observe(() => {
 			this.updateProgress();
 		});
@@ -62,47 +64,65 @@ class Alspotify {
 	}
 
 	async update(body) {
-		if(typeof body.timestamp !== 'number' || !isFinite(body.timestamp))
-			return;
-
-		if(Math.abs(body.timestamp - Date.now()) > 5000)
-			return;
-
-		if(!body.playing) {
+		if(!body.data || body.data.status !== 'playing') {
 			this.info.playing = false;
 			return;
 		}
 
 		if(
-			typeof body.progress !== 'number' ||
-			!isFinite(body.progress) ||
-			body.progress < 0 ||
-			body.progress > body.duration
+			typeof body.data.progress !== 'number' ||
+			!isFinite(body.data.progress) ||
+			body.data.progress < 0 ||
+			body.data.progress > body.data.duration
 		)
 			return;
 
-		body.progress += Date.now() - body.timestamp;
-		body.progress = Math.max(0, Math.min(body.duration, body.progress));
+		body.data.progress = Math.max(0, Math.min(body.data.duration, body.data.progress));
 
-		if(typeof body.title !== 'string' || typeof body.artist !== 'string') {
-			this.info.progress = body.progress;
+		if(typeof body.data.title !== 'string' || !Array.isArray(body.data.artists)) {
+			this.info.progress = body.data.progress;
 			return;
 		}
 
-		if(typeof body.duration !== 'number' || !isFinite(body.duration) || body.duration < 0)
+		if(typeof body.data.duration !== 'number' || !isFinite(body.data.duration) || body.data.duration < 0)
 			return;
+
+		const matchResult = Array.from(body.data.title.matchAll(this.titleRegex));
+		if(matchResult) {
+			if(matchResult.length > 1) {
+				if (matchResult[0] && matchResult[0][1]) {
+					body.data.artists.unshift(matchResult[0][1].trim());
+					body.data.title = matchResult[0][2].trim();
+				} else {
+					if (matchResult[0] && matchResult[0][2]) {
+						body.data.artists.unshift(matchResult[0][2].trim());
+					}
+					body.data.title = matchResult[1][2].trim();
+				}
+			} else {
+				if (matchResult[0][1]) {
+					body.data.artists.unshift(matchResult[0][1].trim());
+				}
+				body.data.title = matchResult[0][2].trim();
+			}
+		}
+
+		let artist = body.data.artists[0];
+		if (body.data.artists.length > 2) {
+			artist = body.data.artists[1];
+		}
 
 		this.info.$assign({
 			playing: true,
-			title: body.title,
-			artist: body.artist,
-			progress: body.progress,
-			duration: body.duration
+			title: body.data.title,
+			artist: artist, // body.data.artists.join(", "),
+			progress: body.data.progress,
+			duration: body.data.duration
 		});
 
-		if(body.uri && body.uri !== this.lastUri) {
-			this.lastUri = body.uri;
-			await this.updateLyric(body.lyrics);
+		if(body.data.cover_url && body.data.cover_url !== this.lastUri) {
+			this.lastUri = body.data.cover_url;
+			await this.updateLyric(null);
 		}
 	}
 
@@ -110,7 +130,10 @@ class Alspotify {
 		try {
 			const lyric = await (
 				alsong(this.info.artist, this.info.title, { playtime: Number(this.info.duration) })
-					.then(lyricItems => alsong.getLyricById(lyricItems[0].lyricId))
+					.then(lyricItems => {
+						console.log(`Retrieved alsong info: ${lyricItems[0].artist} - ${lyricItems[0].title}`);
+						return alsong.getLyricById(lyricItems[0].lyricId);
+					})
 					.then(lyricData => lyricData.lyric)
 					.catch(err => {
 						if (typeof spotifyLyric !== 'object') {
@@ -120,6 +143,10 @@ class Alspotify {
 						return spotifyLyric;
 					})
 			);
+
+			if(!lyric['0']) {
+				lyric['0'] = [];
+			}
 			
 			const timestamp = Object.keys(lyric).sort((v1, v2) => parseInt(v1) - parseInt(v2));
 			this.info.lyric = {
@@ -130,6 +157,14 @@ class Alspotify {
 
 			console.log(`Retrieved lyric: ${this.info.artist} - ${this.info.title}`);
 		} catch(e) {
+			this.info.lyric = {
+				timestamp: ['0'],
+				lyric: {
+					'0': []
+				},
+				current: []
+			};
+			this.lastUpdate = -1;
 			console.error(`Error while retrieving lyric: ${e}`);
 		}
 	}
