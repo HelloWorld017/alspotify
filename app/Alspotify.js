@@ -13,7 +13,6 @@ class Alspotify {
 		this.info = observable.init('api', {});
 		this.lastUri = null;
 		this.lastUpdate = -1;
-		this.lastFetch = -1;
 		this.titleRegex = /(?:[\[\(\{\【]([^\]\)\}\】]+)[\]\)\}\】]\s*)*([^\[\(\{\【\「\]\)\}\】\」\-\/]+)(?:[\[\(\{\【]([^\]\)\}\】]+)[\]\)\}\】]\s*)*/g;
 
 		const app = express();
