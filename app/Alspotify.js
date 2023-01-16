@@ -122,7 +122,7 @@ class Alspotify {
 
 		if(body.data.cover_url && body.data.cover_url !== this.lastUri) {
 			this.lastUri = body.data.cover_url;
-			await this.updateLyric(null);
+			await this.updateLyric(body.data.lyrics);
 		}
 	}
 
