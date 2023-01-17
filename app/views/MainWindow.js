@@ -32,7 +32,7 @@ class MainWindow extends QMainWindow {
 
 		layout.addWidget(new LyricsView());
 		layout.addWidget(new NowPlayingView());
-		
+
 		this.setCentralWidget(widget);
 
 		config.$observe(() => {

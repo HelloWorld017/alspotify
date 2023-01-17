@@ -25,14 +25,15 @@
   },
   "homepage": "https://github.com/HelloWorld017/alspotify#readme",
   "dependencies": {
+    "@nodegui/qode": "^18.12.1-rc1",
     "@nodegui/nodegui": "^0.57.3",
     "alsong": "^3.0.1",
     "body-parser": "^1.20.1",
     "cors": "^2.8.5",
     "deepmerge": "^4.2.2",
-    "displays": "^1.1.4",
     "express": "^4.18.2",
-    "nodegui-plugin-metrics": "^1.0.1"
+    "nodegui-plugin-metrics": "^1.0.1",
+    "screenz": "^1.0.0"
   },
   "devDependencies": {
     "@nodegui/packer": "^1.5.0",

@@ -1,5 +1,5 @@
 const deepmerge = require('deepmerge');
-const displays = require('displays')();
+const { width, height } = require("screenz");
 const fs = require('fs');
 const observable = require('./Observable');
 
@@ -34,7 +34,6 @@ class Config {
 	}
 
 	get defaultConfig() {
-		const lastDisplay = displays[displays.length - 1];
 
 		return {
 			style: {
@@ -63,8 +62,8 @@ class Config {
 			},
 
 			windowPosition: {
-				x: lastDisplay.left + lastDisplay.width - 600,
-				y: lastDisplay.top + lastDisplay.height - 250,
+				x: width - 600,
+				y: height - 250,
 				w: 500,
 				h: 150
 			}
