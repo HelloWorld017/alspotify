@@ -13,7 +13,6 @@ class Alspotify {
 		this.info = observable.init('api', {});
 		this.lastUri = null;
 		this.lastUpdate = -1;
-		this.titleRegex = /(?:[\[\(\{\【]([^\]\)\}\】]+)[\]\)\}\】]\s*)*([^\[\(\{\【\「\]\)\}\】\」\-\/]+)(?:[\[\(\{\【]([^\]\)\}\】]+)[\]\)\}\】]\s*)*/g;
 
 		const app = express();
 		app.use(cors());
@@ -86,35 +85,10 @@ class Alspotify {
 		if(typeof body.data.duration !== 'number' || !isFinite(body.data.duration) || body.data.duration < 0)
 			return;
 
-		const matchResult = Array.from(body.data.title.matchAll(this.titleRegex));
-		if(matchResult) {
-			if(matchResult.length > 1) {
-				if (matchResult[0] && matchResult[0][1]) {
-					body.data.artists.unshift(matchResult[0][1].trim());
-					body.data.title = matchResult[0][2].trim();
-				} else {
-					if (matchResult[0] && matchResult[0][2]) {
-						body.data.artists.unshift(matchResult[0][2].trim());
-					}
-					body.data.title = matchResult[1][2].trim();
-				}
-			} else {
-				if (matchResult[0][1]) {
-					body.data.artists.unshift(matchResult[0][1].trim());
-				}
-				body.data.title = matchResult[0][2].trim();
-			}
-		}
-
-		let artist = body.data.artists[0];
-		if (body.data.artists.length > 2) {
-			artist = body.data.artists[1];
-		}
-
 		this.info.$assign({
 			playing: true,
 			title: body.data.title,
-			artist: artist, // body.data.artists.join(", "),
+			artist: body.data.artists.join(", "),
 			progress: body.data.progress,
 			duration: body.data.duration
 		});
