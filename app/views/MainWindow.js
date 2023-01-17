@@ -1,23 +1,31 @@
 const config = require('../utils/Config')();
 
 const {
-	FlexLayout,
 	QMainWindow,
 	QWidget,
 	WidgetAttribute,
 	WindowType,
-	QIcon
+	QIcon,
+	QSystemTrayIcon,
+	FlexLayout
 } = require('@nodegui/nodegui');
 
 const LyricsView = require('../components/LyricsView');
 const NowPlayingView = require('../components/NowPlayingView');
+
+const IconMusicPicture = require('../assets/IconMusic.png');
 
 
 class MainWindow extends QMainWindow {
 	constructor() {
 		super();
 		this.setWindowTitle('Alspotify');
-		this.setWindowIcon(new QIcon('../assets/IconMusic.png'));
+		const systemIcon = new QIcon(IconMusicPicture);
+		const tray = new QSystemTrayIcon();
+		this.setWindowIcon(systemIcon);
+		tray.setIcon(systemIcon);
+		tray.show();
+		global.tray = tray;
 		this.setWindowFlag(WindowType.FramelessWindowHint, true);
 		this.setWindowFlag(WindowType.WindowStaysOnTopHint, true);
 		this.setWindowFlag(WindowType.WindowTransparentForInput, true);
@@ -30,10 +38,13 @@ class MainWindow extends QMainWindow {
 		widget.setObjectName('Root');
 		widget.setLayout(layout);
 
-		layout.addWidget(new LyricsView());
-		layout.addWidget(new NowPlayingView());
+		const lyricsView = new LyricsView();
+		layout.addWidget(lyricsView);
+		const nowPlayingView = new NowPlayingView();
+		layout.addWidget(nowPlayingView);
 
 		this.setCentralWidget(widget);
+		this.setMinimumSize(Math.max(config.style.nowPlaying.width, config.style.lyric.width), this.size().height());
 
 		config.$observe(() => {
 			this.setGeometry(

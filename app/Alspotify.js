@@ -1,8 +1,9 @@
 const alsong = require('alsong');
-const bodyParser = require('body-parser');
-const cors = require('cors');
+const bodyParser = require('koa-bodyparser');
+const cors = require('@koa/cors');
 const config = require('./utils/Config')();
-const express = require('express');
+const Koa = require('koa');
+const Router = require('koa-router');
 const observable = require('./utils/Observable');
 
 const { QApplication } = require("@nodegui/nodegui");
@@ -14,27 +15,30 @@ class Alspotify {
 		this.lastUri = null;
 		this.lastUpdate = -1;
 
-		const app = express();
+		const app = new Koa();
 		app.use(cors());
-		app.use(bodyParser.json());
+		app.use(bodyParser());
 
-		app.post('/', (req, res) => {
-			this.update(req.body);
-			res.end();
+		const router = new Router();
+
+		router.post('/', async (ctx) => {
+			this.update(ctx.request.body);
 		});
 
-		app.get('/config', (req, res) => {
-
-		});
-
-		app.post('/config', (req, res) => {
+		router.get('/config', (ctx) => {
 
 		});
 
-		app.post('/shutdown', (req, res) => {
+		router.post('/config', (ctx) => {
+
+		});
+
+		router.post('/shutdown', (ctx) => {
 			const qApp = QApplication.instance();
 			qApp.quit();
 		});
+
+		app.use(router.routes()).use(router.allowedMethods());
 
 		this.app = app;
 		this.initialized = false;
@@ -45,7 +49,7 @@ class Alspotify {
 			return;
 
 		this.initialized = true;
-		this.app.listen(1608, 'localhost');
+		this.app.listen(1608, '127.0.0.1');
 		this.info.$observe(() => {
 			this.updateProgress();
 		});
