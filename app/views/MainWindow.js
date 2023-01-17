@@ -40,7 +40,7 @@ class MainWindow extends QMainWindow {
 		tray.setIcon(systemIcon);
 		tray.setContextMenu(this.#getTrayMenu());
 		tray.show();
-		global.tray = tray;
+		global.tray = tray; // prevent Qt gc
 		this.setWindowFlag(WindowType.FramelessWindowHint, true);
 		this.setWindowFlag(WindowType.WindowStaysOnTopHint, true);
 		this.setWindowFlag(WindowType.WindowTransparentForInput, true);
