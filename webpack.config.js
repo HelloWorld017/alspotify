@@ -1,76 +1,86 @@
-const path = require('path');
-const webpack = require('webpack');
-
 const TerserPlugin = require('terser-webpack-plugin');
+const webpack = require('webpack');
+const path = require('path');
+
 
 const nodeEnv = (process.env.NODE_ENV || 'development').trim();
 
 module.exports = {
-	entry: {
-		alspotify: path.resolve(__dirname, 'app', 'index.js')
-	},
+  resolve: {
+    extensions: ['.ts', '.json', '.js', '.wasm'],
+  },
 
-	output: {
-		path: path.resolve(__dirname, 'dist'),
-		filename: '[name].bundle.js'
-	},
+  entry: {
+    alspotify: path.resolve(__dirname, 'app', 'index.ts')
+  },
 
-	mode: nodeEnv,
-	target: 'node',
-	node: {
-		__dirname: false
-	},
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: '[name].bundle.js'
+  },
 
-	module: {
-		rules: [
-			{
-				test: /\.node$/,
-				loader: 'node-loader',
-				options: {
-					name: '[name].[ext]'
-				}
-			},
+  mode: nodeEnv,
+  target: 'node',
+  node: {
+    __dirname: false
+  },
 
-			{
-				test: /\.(png|jpe?g|gif|woff2?|otf|ttf|eot)(\?|#.*)?$/,
-				loader: 'file-loader',
-				options: {
-					name: 'assets/[name]-[hash:8].[ext]',
-					publicPath: './dist',
-					esModule: false
-				}
-			}
-		]
-	},
+  module: {
+    rules: [
+      {
+        test: /\.node$/,
+        loader: 'node-loader',
+        options: {
+          name: '[name].[ext]'
+        }
+      },
 
-	plugins: [
-		new webpack.DefinePlugin({
-			'process.env.NODE_ENV': `"${nodeEnv}"`
-		}),
+      {
+        test: /\.ts$/,
+        exclude: /node_module/,
+        loader: 'ts-loader',
+      },
 
-		new webpack.NormalModuleReplacementPlugin(
-			/^bindings$/,
-			`${__dirname}/app/utils/Bindings`
-		)
-	],
+      {
+        test: /\.(png|jpe?g|gif|woff2?|otf|ttf|eot)(\?|#.*)?$/,
+        loader: 'file-loader',
+        options: {
+          name: 'assets/[name]-[hash:8].[ext]',
+          publicPath: './dist',
+          esModule: false
+        }
+      }
+    ]
+  },
 
-	optimization: {
-		minimize: false
-	}
+  plugins: [
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': `"${nodeEnv}"`
+    }),
+
+    new webpack.NormalModuleReplacementPlugin(
+      /^bindings$/,
+      `${__dirname}/app/utils/Bindings`
+    )
+  ],
+
+  optimization: {
+    minimize: false
+  }
 };
 
-if(nodeEnv === 'production') {
-	module.exports.optimization = {
-		minimizer: [
-			new TerserPlugin({
-				parallel: true,
-				extractComments: 'all',
-				terserOptions: {
-					compress: {
-						reduce_vars: false
-					}
-				}
-			})
-		]
-	}
+if (nodeEnv === 'production') {
+  module.exports.optimization = {
+    minimizer: [
+      new TerserPlugin({
+        parallel: true,
+        extractComments: 'all',
+        terserOptions: {
+          compress: {
+            reduce_vars: false
+          }
+        }
+      })
+    ]
+  }
 }
