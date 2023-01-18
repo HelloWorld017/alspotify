@@ -1,7 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
 
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
 const nodeEnv = (process.env.NODE_ENV || 'development').trim();
@@ -49,12 +48,6 @@ module.exports = {
 			'process.env.NODE_ENV': `"${nodeEnv}"`
 		}),
 
-		new CopyWebpackPlugin({
-			patterns: [
-				{ from: 'node_modules/displays/build/Release/displays.node', to: 'displays.node' }
-			]
-		}),
-
 		new webpack.NormalModuleReplacementPlugin(
 			/^bindings$/,
 			`${__dirname}/app/utils/Bindings`
@@ -70,7 +63,6 @@ if(nodeEnv === 'production') {
 	module.exports.optimization = {
 		minimizer: [
 			new TerserPlugin({
-				cache: true,
 				parallel: true,
 				extractComments: 'all',
 				terserOptions: {

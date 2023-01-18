@@ -1,5 +1,5 @@
+const { QApplication } = require('@nodegui/nodegui');
 const deepmerge = require('deepmerge');
-const displays = require('displays')();
 const fs = require('fs');
 const observable = require('./Observable');
 
@@ -34,7 +34,9 @@ class Config {
 	}
 
 	get defaultConfig() {
-		const lastDisplay = displays[displays.length - 1];
+		const screens = QApplication.screens();
+		const maxRight = Math.max(...screens.map(screen => screen.geometry().left() + screen.geometry().width() * screen.devicePixelRatio()));
+		const maxBottom = Math.max(...screens.map(screen => screen.geometry().top() + screen.geometry().height() * screen.devicePixelRatio()));
 
 		return {
 			style: {
@@ -63,8 +65,8 @@ class Config {
 			},
 
 			windowPosition: {
-				x: lastDisplay.left + lastDisplay.width - 600,
-				y: lastDisplay.top + lastDisplay.height - 250,
+				x: maxRight - 600,
+				y: maxBottom - 250,
 				w: 500,
 				h: 150
 			}
