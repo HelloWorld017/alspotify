@@ -11,7 +11,7 @@ import {
 } from '@nodegui/nodegui';
 import LyricsView from '../components/LyricsView';
 import NowPlayingView from '../components/NowPlayingView';
-import utils from '../utils/Config';
+import utils, {ConfigApi} from '../utils/Config';
 
 const config = utils();
 
@@ -23,13 +23,15 @@ class MainWindow extends QMainWindow {
   constructor() {
     super();
     this.setWindowTitle('Alspotify');
+
     const systemIcon = new QIcon(IconMusicPicture);
-    const tray = new QSystemTrayIcon();
     this.setWindowIcon(systemIcon);
+
+    const tray = new QSystemTrayIcon(this);
     tray.setIcon(systemIcon);
-    tray.setContextMenu(this.#getTrayMenu());
+    tray.setContextMenu(this.#getTrayMenu(this));
     tray.show();
-    global.tray = tray; // prevent Qt gc
+
     this.setWindowFlag(WindowType.FramelessWindowHint, true);
     this.setWindowFlag(WindowType.WindowStaysOnTopHint, true);
     this.setWindowFlag(WindowType.WindowTransparentForInput, true);
@@ -68,13 +70,22 @@ class MainWindow extends QMainWindow {
     });
   }
 
-  #getTrayMenu() {
-    const menu = new QMenu();
+  #getTrayMenu(parent: QWidget) {
+    const menu = new QMenu(parent);
 
     const exitAction = menu.addAction('Exit');
     exitAction.addEventListener('triggered', () => {
       const qApp = QApplication.instance();
       qApp.quit();
+    });
+
+    menu.addSeparator();
+    const experimentalLyricParser = menu.addAction('Use Experimental Title Parser');
+    experimentalLyricParser.setCheckable(true);
+    experimentalLyricParser.setChecked(config.experimental.titleParser);
+    experimentalLyricParser.addEventListener('triggered', () => {
+      config.experimental.titleParser = experimentalLyricParser.isChecked();
+      ConfigApi.save();
     });
 
     return menu;

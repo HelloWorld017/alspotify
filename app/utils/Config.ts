@@ -22,6 +22,9 @@ interface ConfigStruct {
       align: string;
     }
   },
+  experimental?: {
+    titleParser: boolean;
+  },
   lyric: {
     count: number;
     overflow: string;
@@ -66,6 +69,10 @@ class Config {
         }
       },
 
+      experimental: {
+        titleParser: false,
+      },
+
       lyric: {
         count: 3,
         overflow: 'none' // 'elide' or 'wrap' or 'none'
@@ -105,9 +112,9 @@ class Config {
   }
 }
 
-const config = new Config();
+export const ConfigApi = new Config();
 
 export default () => {
-  config.init();
-  return config.observable;
+  ConfigApi.init();
+  return ConfigApi.observable;
 };

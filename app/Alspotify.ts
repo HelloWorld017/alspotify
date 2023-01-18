@@ -46,6 +46,7 @@ class Alspotify {
   private lastUpdate = -1;
   private app: Koa;
   private initialized: boolean;
+  private titleRegex = /(?:[[({【]([^\])}】]+)[\])}】]\s*)*([^[({【「\])}】」\-/]+)(?:[[({【]([^\])}】]+)[\])}】]\s*)*/g;
 
   constructor() {
     this.info = Observable.init<Information | Record<string, never>>(
@@ -136,10 +137,40 @@ class Alspotify {
       return;
     }
 
+    let artists: string[];
+    let title: string;
+
+    if (config.experimental?.titleParser) {
+      artists = [...body.data.artists];
+      const matchResult = Array.from(body.data.title.matchAll(this.titleRegex));
+      if (matchResult) {
+        if (matchResult.length > 1) {
+          if (matchResult[0] && matchResult[0][1]) {
+            artists.unshift(matchResult[0][1].trim());
+            title = matchResult[0][2].trim();
+          } else {
+            if (matchResult[0] && matchResult[0][2]) {
+              artists.unshift(matchResult[0][2].trim());
+            }
+            title = matchResult[1][2].trim();
+          }
+        } else {
+          if (matchResult[0][1]) {
+            artists.unshift(matchResult[0][1].trim());
+          }
+          title = matchResult[0][2].trim();
+        }
+      }
+      artists = Array.from(new Set(artists));
+    } else {
+      artists = body.data.artists;
+      title = body.data.title;
+    }
+
     this.info.$assign({
       playing: true,
-      title: body.data.title,
-      artist: body.data.artists.join(', '),
+      title,
+      artist: artists.join(', '),
       progress: body.data.progress,
       duration: body.data.duration,
     });
