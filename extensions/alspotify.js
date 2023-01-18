@@ -58,8 +58,8 @@
 			return {
 				playing: true,
 				title: Spicetify.Player.data.track.metadata.title,
-				artist: Spicetify.Player.data.track.metadata.artist_name,
-				uri,
+				artists: [Spicetify.Player.data.track.metadata.artist_name],
+				cover_url: uri,
 				duration: Spicetify.Player.getDuration(),
 				progress: Spicetify.Player.getProgress(),
 				lyrics: await getLyric()
@@ -68,7 +68,7 @@
 
 		return {
 			playing: true,
-			uri,
+			cover_url: uri,
 			duration: Spicetify.Player.getDuration(),
 			progress: Spicetify.Player.getProgress()
 		};
@@ -78,15 +78,16 @@
 		const info = await getInfo();
 		previousInfo = info;
 
-		await fetch('http://localhost:29192/', {
+		await fetch('http://localhost:1608/', {
 			method: 'POST',
 			mode: 'cors',
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
-				...info,
-				timestamp: Date.now()
+				data: {
+					...info
+				}
 			})
 		});
 	};
