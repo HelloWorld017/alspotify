@@ -46,7 +46,7 @@ class Alspotify {
   private lastUpdate = -1;
   private app: Koa;
   private initialized: boolean;
-  private titleRegex = /(?:[[({【]([^\])}】]+)[\])}】]\s*)*([^[({【「\])}】」\-/]+)(?:[[({【]([^\])}】]+)[\])}】]\s*)*/g;
+  private titleParserRegex = /(?:[[({【]([^\])}】]+)[\])}】]\s*)*([^[({【「\])}】」\-/]+)(?:[[({【]([^\])}】]+)[\])}】]\s*)*/g;
 
   constructor() {
     this.info = Observable.init<Information | Record<string, never>>(
@@ -142,7 +142,7 @@ class Alspotify {
 
     if (config.experimental?.titleParser) {
       artists = [...body.data.artists];
-      const matchResult = Array.from(body.data.title.matchAll(this.titleRegex));
+      const matchResult = Array.from(body.data.title.matchAll(this.titleParserRegex));
       if (matchResult) {
         if (matchResult.length > 1) {
           if (matchResult[0] && matchResult[0][1]) {
