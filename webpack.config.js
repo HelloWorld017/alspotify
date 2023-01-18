@@ -1,7 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
 
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
 const nodeEnv = (process.env.NODE_ENV || 'development').trim();
@@ -47,12 +46,6 @@ module.exports = {
 	plugins: [
 		new webpack.DefinePlugin({
 			'process.env.NODE_ENV': `"${nodeEnv}"`
-		}),
-
-		new CopyWebpackPlugin({
-			patterns: [
-				{ from: 'node_modules/robotjs/build/Release/robotjs.node', to: 'robotjs.node' }
-			]
 		}),
 
 		new webpack.NormalModuleReplacementPlugin(

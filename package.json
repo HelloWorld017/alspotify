@@ -35,12 +35,10 @@
     "koa": "^2.14.1",
     "koa-bodyparser": "^4.3.0",
     "koa-router": "^12.0.0",
-    "nodegui-plugin-metrics": "^1.0.1",
-    "screenz": "^1.0.0"
+    "nodegui-plugin-metrics": "^1.0.1"
   },
   "devDependencies": {
     "@nodegui/packer": "^1.5.0",
-    "copy-webpack-plugin": "^11.0.0",
     "cross-env": "^7.0.3",
     "file-loader": "^6.2.0",
     "node-loader": "^2.0.0",
