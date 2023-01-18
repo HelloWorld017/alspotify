@@ -6,7 +6,7 @@ import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 import Router from 'koa-router';
 import utils from './utils/Config';
-import observable from './utils/Observable';
+import Observable, {ObserverPrototype} from './utils/Observable';
 
 const logger = new Logger();
 const config = utils();
@@ -17,7 +17,7 @@ interface Information {
   artist: string;
   progress: number;
   duration: number;
-  lyric: {
+  lyric?: {
     timestamp: string[];
     lyric: {
       [key: string]: string[];
@@ -41,14 +41,14 @@ interface RequestBody {
 }
 
 class Alspotify {
-  public info: Information & typeof observable;
+  public info: Information & ObserverPrototype<Information>;
   private lastUri: string = null;
   private lastUpdate = -1;
   private app: Koa;
   private initialized: boolean;
 
   constructor() {
-    this.info = observable.init('api', {}) as Information & typeof observable;
+    this.info = Observable.init('api', {}) as Information & ObserverPrototype<Information>;
 
     const app = new Koa();
     app.use(cors());
@@ -190,8 +190,7 @@ class Alspotify {
         current: [],
       };
       this.lastUpdate = -1;
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      logger.error(`Error while retrieving lyric: ${e}`);
+      logger.error(`Error while retrieving lyric: ${String(e)}`);
     }
   }
 

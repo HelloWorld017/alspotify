@@ -1,10 +1,20 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-call */
+type Effect = () => void;
+type ObserverBase = {
+  '#': Set<Effect>,
+  '#Parent': ObserverBase,
+  [x: string | symbol]: Set<Effect> | ObserverBase,
+};
+
+export type ObserverPrototype<T = unknown> = {
+  $observe(effect: Effect): void;
+  $assign(target: T): (value: Record<string, unknown> & T) => void;
+  $set(target: T): (value: Record<string, unknown> & T) => void;
+};
+
+
 class Observable {
-  public readonly observers: any[];
-  public readonly currentObserver: any[];
-  public readonly $observe: (callbackFn: () => void) => void;
-  public readonly $assign: (target: any) => (value: any) => void;
-  public readonly $set: (target: any) => (value: any) => void;
+  public readonly observers: ObserverBase;
+  public readonly currentObserver: Effect[];
 
   constructor() {
     this.observers = this.createNewObserver(null);
@@ -15,25 +25,21 @@ class Observable {
     if (!this.observers[name])
       {this.observers[name] = this.createNewObserver(this.observers);}
 
-    return this.hookProperty(hookTarget, this.observers[name] as any[]);
+    return this.hookProperty(hookTarget, this.observers[name] as ObserverBase);
   }
 
-  createNewObserver(parent): any[] {
+  createNewObserver(parent: ObserverBase): ObserverBase {
     return Object.assign(Object.create(null), {
       '#': new Set(),
       '#Parent': parent
-    });
+    }) as ObserverBase;
   }
 
-  createNewPrototype(observers): {
-    $assign: (target) => (value) => void;
-    $observe: (callbackFn: () => void) => void;
-    $set: (target) => (value) => void
-  } {
+  createNewPrototype(observers: ObserverBase): ObserverPrototype {
     return {
-      $observe: () => this.observe.bind(this),
+      $observe: () => this.observe.bind(this) as Effect,
 
-      $set: target => {
+      $set: (target: Effect) => {
         return value => {
           for (const key in target) {
             delete target[key];
@@ -56,23 +62,24 @@ class Observable {
     };
   }
 
-  callObservers(observers) {
+  callObservers(observers: ObserverBase) {
     observers['#'].forEach(observer => {
-      this.observe(observer as () => void);
+      this.observe(observer);
     });
   }
 
-  hookProperty(hookTarget: object, observers = this.observers) {
+  hookProperty(hookTarget: object, observers = this.observers): object {
     if (Array.isArray(hookTarget)) {
       // Don't hook array, for purpose of performance
-      return hookTarget;
+      return hookTarget as Array<unknown>;
     }
 
     const prototype = this.createNewPrototype(observers);
     return new Proxy(hookTarget, {
       get: (target, name) => {
-        if (Object.hasOwnProperty.call(prototype, name))
-          {return prototype[name](target);}
+        if (Object.hasOwnProperty.call(prototype, name) && typeof prototype[name] === 'function') {
+          return (prototype[name] as (target) => (value) => void)(target);
+        }
 
         if (!observers[name])
           {observers[name] = this.createNewObserver(observers);}
@@ -80,8 +87,8 @@ class Observable {
         if (this.currentObserver.length > 0) {
           const currentObserver = this.currentObserver[this.currentObserver.length - 1];
 
-          if (!observers[name]['#'].has(currentObserver)) {
-            let observerList = observers[name];
+          if (!(observers[name] as ObserverBase)['#'].has(currentObserver)) {
+            let observerList = observers[name] as ObserverBase;
 
             while (observerList !== null) {
               observerList['#'].add(currentObserver);
@@ -90,25 +97,26 @@ class Observable {
           }
         }
 
-        const targetItem = target[name];
+        const targetItem = target[name] as object;
+
         if (typeof targetItem === 'object')
-          {return this.hookProperty(targetItem as object, observers[name] as any[]);}
+          {return this.hookProperty(targetItem, observers[name] as ObserverBase);}
 
         return targetItem;
       },
 
-      set: (target: object, name: string | symbol, value) => {
+      set: (target: object, name: string | symbol, value: object) => {
         target[name] = value;
 
         if (observers[name])
-          {this.callObservers(observers[name]);}
+          {this.callObservers(observers[name] as ObserverBase);}
 
         return true;
       }
     });
   }
 
-  observe(fn: () => void) {
+  observe(fn: Effect) {
     this.currentObserver.push(fn);
     fn();
     this.currentObserver.pop();

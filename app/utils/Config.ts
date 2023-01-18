@@ -1,6 +1,6 @@
 import {QApplication} from '@nodegui/nodegui';
 import deepmerge from 'deepmerge';
-import Observable from './Observable';
+import Observable, {ObserverPrototype} from './Observable';
 import fs from 'fs';
 
 interface ConfigStruct {
@@ -36,7 +36,7 @@ interface ConfigStruct {
 
 class Config {
 
-  public observable: ConfigStruct & typeof Observable = null;
+  public observable: ConfigStruct & ObserverPrototype<ConfigStruct> = null;
   private config: ConfigStruct = this.defaultConfig;
   private initialized = false;
 
@@ -89,14 +89,14 @@ class Config {
         this.defaultConfig,
         JSON.parse(configRaw) as ConfigStruct,
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        {arrayMerge: (d, s, o) => s}
+        {arrayMerge: (d, s) => s}
       );
     } catch (e) {
       this.config = this.defaultConfig;
       this.save();
     }
 
-    this.observable = Observable.init('config', this.config) as ConfigStruct & typeof Observable;
+    this.observable = Observable.init('config', this.config) as ConfigStruct & ObserverPrototype<ConfigStruct>;
     this.initialized = true;
   }
 
