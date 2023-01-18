@@ -1,16 +1,22 @@
 type Effect = () => void;
+export type Observer<T> = ObserverBase & ObserverPrototype<T> & T;
 type ObserverBase = {
   '#': Set<Effect>,
   '#Parent': ObserverBase,
   [x: string | symbol]: Set<Effect> | ObserverBase,
 };
 
-export type ObserverPrototype<T = unknown> = {
+type ObserverPrototype<T = unknown> = {
   $observe(effect: Effect): void;
-  $assign(target: T): (value: Record<string, unknown> & T) => void;
-  $set(target: T): (value: Record<string, unknown> & T) => void;
+  $assign(value: Record<string, unknown> & T): void;
+  $set(value: Record<string, unknown> & T): void;
 };
 
+type ObserverPrototypeGenerator<T = unknown> = {
+  $observe(target: T): ObserverPrototype<T>['$observe'];
+  $assign(target: T): ObserverPrototype<T>['$assign'];
+  $set(target: T): ObserverPrototype<T>['$set'];
+};
 
 class Observable {
   public readonly observers: ObserverBase;
@@ -21,11 +27,11 @@ class Observable {
     this.currentObserver = [];
   }
 
-  init(name: string, hookTarget: object) {
+  init<T extends object>(name: string, hookTarget: T): Observer<T> {
     if (!this.observers[name])
-      {this.observers[name] = this.createNewObserver(this.observers);}
+    {this.observers[name] = this.createNewObserver(this.observers);}
 
-    return this.hookProperty(hookTarget, this.observers[name] as ObserverBase);
+    return this.hookProperty<T>(hookTarget, this.observers[name] as ObserverBase);
   }
 
   createNewObserver(parent: ObserverBase): ObserverBase {
@@ -35,18 +41,18 @@ class Observable {
     }) as ObserverBase;
   }
 
-  createNewPrototype(observers: ObserverBase): ObserverPrototype {
+  createNewPrototype<T extends object>(observers: ObserverBase): ObserverPrototypeGenerator<T> {
     return {
       $observe: () => this.observe.bind(this) as Effect,
 
-      $set: (target: Effect) => {
+      $set: target => {
         return value => {
           for (const key in target) {
             delete target[key];
           }
 
           for (const key in value) {
-            target[key] = value[key];
+            target[key as keyof T] = value[key] as T[keyof T];
           }
 
           this.callObservers(observers);
@@ -68,28 +74,31 @@ class Observable {
     });
   }
 
-  hookProperty(hookTarget: object, observers = this.observers): object {
+  hookProperty<T extends object>(hookTarget: T, observers = this.observers): Observer<T> {
     if (Array.isArray(hookTarget)) {
       // Don't hook array, for purpose of performance
-      return hookTarget as Array<unknown>;
+      return hookTarget as Observer<T>;
     }
 
     const prototype = this.createNewPrototype(observers);
-    return new Proxy(hookTarget, {
+    const isPrototypeKey = (key: string | symbol): key is keyof ObserverPrototype =>
+      (Object.hasOwnProperty.call(prototype, key) as boolean);
+
+    return new Proxy<T>(hookTarget, {
       get: (target, name) => {
-        if (Object.hasOwnProperty.call(prototype, name) && typeof prototype[name] === 'function') {
-          return (prototype[name] as (target) => (value) => void)(target);
+        if (isPrototypeKey(name) && typeof prototype[name] === 'function') {
+          return prototype[name](target);
         }
 
-        if (!observers[name])
-          {observers[name] = this.createNewObserver(observers);}
+        if (!observers[name]) {
+          observers[name] = this.createNewObserver(observers);
+        }
 
+        let observerList = observers[name] as ObserverBase;
         if (this.currentObserver.length > 0) {
           const currentObserver = this.currentObserver[this.currentObserver.length - 1];
 
-          if (!(observers[name] as ObserverBase)['#'].has(currentObserver)) {
-            let observerList = observers[name] as ObserverBase;
-
+          if (!observerList['#'].has(currentObserver)) {
             while (observerList !== null) {
               observerList['#'].add(currentObserver);
               observerList = observerList['#Parent'];
@@ -97,23 +106,24 @@ class Observable {
           }
         }
 
-        const targetItem = target[name] as object;
-
-        if (typeof targetItem === 'object')
-          {return this.hookProperty(targetItem, observers[name] as ObserverBase);}
+        const targetItem = target[name as keyof T];
+        if (typeof targetItem === 'object') {
+          return this.hookProperty(targetItem as object, observers[name] as ObserverBase);
+        }
 
         return targetItem;
       },
 
-      set: (target: object, name: string | symbol, value: object) => {
-        target[name] = value;
+      set: (target: T, name: string | symbol, value: object) => {
+        target[name as keyof T] = value as T[keyof T];
 
-        if (observers[name])
-          {this.callObservers(observers[name] as ObserverBase);}
+        if (observers[name]) {
+          this.callObservers(observers[name] as ObserverBase);
+        }
 
         return true;
       }
-    });
+    }) as Observer<T>;
   }
 
   observe(fn: Effect) {

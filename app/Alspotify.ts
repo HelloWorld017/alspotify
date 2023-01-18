@@ -6,7 +6,7 @@ import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 import Router from 'koa-router';
 import utils from './utils/Config';
-import Observable, {ObserverPrototype} from './utils/Observable';
+import Observable, {Observer} from './utils/Observable';
 
 const logger = new Logger();
 const config = utils();
@@ -41,14 +41,17 @@ interface RequestBody {
 }
 
 class Alspotify {
-  public info: Information & ObserverPrototype<Information>;
+  public info: Observer<Information | Record<string, never>>;
   private lastUri: string = null;
   private lastUpdate = -1;
   private app: Koa;
   private initialized: boolean;
 
   constructor() {
-    this.info = Observable.init('api', {}) as Information & ObserverPrototype<Information>;
+    this.info = Observable.init<Information | Record<string, never>>(
+      'api',
+      {}
+    );
 
     const app = new Koa();
     app.use(cors());

@@ -1,6 +1,6 @@
 import {QApplication} from '@nodegui/nodegui';
 import deepmerge from 'deepmerge';
-import Observable, {ObserverPrototype} from './Observable';
+import Observable, {Observer} from './Observable';
 import fs from 'fs';
 
 interface ConfigStruct {
@@ -36,7 +36,7 @@ interface ConfigStruct {
 
 class Config {
 
-  public observable: ConfigStruct & ObserverPrototype<ConfigStruct> = null;
+  public observable: Observer<ConfigStruct> = null;
   private config: ConfigStruct = this.defaultConfig;
   private initialized = false;
 
@@ -96,7 +96,7 @@ class Config {
       this.save();
     }
 
-    this.observable = Observable.init('config', this.config) as ConfigStruct & ObserverPrototype<ConfigStruct>;
+    this.observable = Observable.init('config', this.config);
     this.initialized = true;
   }
 
