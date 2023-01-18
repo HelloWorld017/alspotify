@@ -26,6 +26,7 @@ module.exports = {
   },
 
   module: {
+    noParse: /\/NativeRequire.js$/,
     rules: [
       {
         test: /\.node$/,
