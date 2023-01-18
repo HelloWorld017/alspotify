@@ -51,7 +51,7 @@ module.exports = {
 
 		new CopyWebpackPlugin({
 			patterns: [
-				{ from: 'node_modules/displays/build/Release/displays.node', to: 'displays.node' }
+				{ from: 'node_modules/robotjs/build/Release/robotjs.node', to: 'robotjs.node' }
 			]
 		}),
 
