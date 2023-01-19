@@ -1,17 +1,30 @@
 import cors from '@koa/cors';
-import { QApplication } from '@nodegui/nodegui';
+import {QApplication, QMenu} from '@nodegui/nodegui';
 import Logger from '@ptkdev/logger';
 import alsong from 'alsong';
 import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 import Router from 'koa-router';
-import utils from './utils/Config';
+import utils, {ConfigApi} from './utils/Config';
+import nativeRequire from './utils/NativeRequire';
 import Observable, {Observer} from './utils/Observable';
+import fs from 'fs';
+import * as path from 'path';
 
-const logger = new Logger();
+const logger = new Logger({
+  write: true,
+  path: {
+    debug_log: path.join(__dirname, '..', '/debug.log'),
+    error_log: path.join(__dirname, '..', '/error.log')
+  },
+  rotate: {
+    size: '10K',
+    encoding: 'utf-8'
+  }
+});
 const config = utils();
 
-interface Information {
+interface TunaOBSPayload {
   playing: boolean;
   title: string;
   artist: string;
@@ -40,15 +53,21 @@ interface RequestBody {
   }
 }
 
+interface Plugin {
+  configureMenu?: (config: typeof ConfigApi, menu: QMenu) => void
+  preprocess?: (body: RequestBody) => void
+}
+
 class Alspotify {
-  public info: Observer<Information | Record<string, never>>;
+  public info: Observer<TunaOBSPayload | Record<string, never>>;
   private lastUri: string = null;
   private lastUpdate = -1;
   private app: Koa;
   private initialized: boolean;
+  public plugins: Plugin[] = [];
 
   constructor() {
-    this.info = Observable.init<Information | Record<string, never>>(
+    this.info = Observable.init<TunaOBSPayload | Record<string, never>>(
       'api',
       {}
     );
@@ -73,6 +92,23 @@ class Alspotify {
     });
 
     app.use(router.routes()).use(router.allowedMethods());
+
+    const pluginDirectory = path.join(__dirname, 'plugins');
+    if (!fs.existsSync(pluginDirectory)) {
+      fs.mkdirSync(pluginDirectory);
+    }
+    fs.readdirSync(pluginDirectory).forEach((file) => {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        const plugin = nativeRequire('./plugins/' + file);
+
+        if (plugin) {
+          this.plugins.push(plugin as Plugin);
+        }
+      } catch (e) {
+        logger.error(String(e));
+      }
+    });
 
     this.app = app;
     this.initialized = false;
@@ -135,6 +171,14 @@ class Alspotify {
     ) {
       return;
     }
+
+    this.plugins.forEach((plugin) => {
+      try {
+        plugin.preprocess?.(body);
+      } catch (e) {
+        logger.error(String(e), 'Plugin preprocess');
+      }
+    });
 
     this.info.$assign({
       playing: true,

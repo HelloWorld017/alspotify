@@ -105,9 +105,9 @@ class Config {
   }
 }
 
-const config = new Config();
+export const ConfigApi = new Config();
 
 export default () => {
-  config.init();
-  return config.observable;
+  ConfigApi.init();
+  return ConfigApi.observable;
 };

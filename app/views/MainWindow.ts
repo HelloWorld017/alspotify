@@ -9,11 +9,13 @@ import {
   WidgetAttribute,
   WindowType
 } from '@nodegui/nodegui';
+import Alspotify from '../Alspotify';
 import LyricsView from '../components/LyricsView';
 import NowPlayingView from '../components/NowPlayingView';
-import utils from '../utils/Config';
+import utils, {ConfigApi} from '../utils/Config';
 
 const config = utils();
+const api = Alspotify();
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const IconMusicPicture = require('../assets/IconMusic.png') as string;
@@ -75,6 +77,12 @@ class MainWindow extends QMainWindow {
     exitAction.addEventListener('triggered', () => {
       const qApp = QApplication.instance();
       qApp.quit();
+    });
+
+    menu.addSeparator();
+
+    api.plugins.forEach((plugin) => {
+      plugin.configureMenu?.(ConfigApi, menu);
     });
 
     return menu;

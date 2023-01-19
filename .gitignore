@@ -3,3 +3,5 @@ node_modules
 /deploy/**/build
 /dist
 .idea
+error.log
+debug.log
