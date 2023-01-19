@@ -82,7 +82,7 @@ class MainWindow extends QMainWindow {
     menu.addSeparator();
 
     api.plugins.forEach((plugin) => {
-      plugin.configureMenu(ConfigApi, menu);
+      plugin.configureMenu?.(ConfigApi, menu);
     });
 
     return menu;
