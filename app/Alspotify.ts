@@ -54,8 +54,8 @@ interface RequestBody {
 }
 
 interface Plugin {
-  configureMenu: (config: typeof ConfigApi, menu: QMenu) => void
-  preprocess: (body: RequestBody) => void
+  configureMenu?: (config: typeof ConfigApi, menu: QMenu) => void
+  preprocess?: (body: RequestBody) => void
 }
 
 class Alspotify {
@@ -100,7 +100,11 @@ class Alspotify {
     fs.readdirSync(pluginDirectory).forEach((file) => {
       try {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        this.plugins.push(nativeRequire('./plugins/' + file) as Plugin);
+        const plugin = nativeRequire('./plugins/' + file);
+
+        if (plugin) {
+          this.plugins.push(plugin as Plugin);
+        }
       } catch (e) {
         logger.error(String(e));
       }
@@ -168,13 +172,13 @@ class Alspotify {
       return;
     }
 
-    try {
-      this.plugins.forEach((plugin) => {
-        plugin.preprocess(body);
-      });
-    } catch (e) {
-      logger.error(String(e), 'PLUGIN PREPROCESSING');
-    }
+    this.plugins.forEach((plugin) => {
+      try {
+        plugin.preprocess?.(body);
+      } catch (e) {
+        logger.error(String(e), 'Plugin preprocess');
+      }
+    });
 
     this.info.$assign({
       playing: true,
