@@ -5,10 +5,10 @@
   "main": "app/index.ts",
   "scripts": {
     "start": "qode ./app/dev-entry.js",
-    "build": "cross-env NODE_ENV=production webpack",
+    "build": "vite build",
     "dist": "npm run build && npm run pack",
     "pack": "nodegui-packer --pack ./dist",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "postinstall": "patch-package"
   },
   "repository": {
     "type": "git",
@@ -26,8 +26,8 @@
   "homepage": "https://github.com/HelloWorld017/alspotify#readme",
   "dependencies": {
     "@koa/cors": "^4.0.0",
-    "@nodegui/nodegui": "^0.57.3",
-    "@nodegui/qode": "^18.12.1-rc1",
+    "@nodegui/nodegui": "^0.61.0",
+    "@nodegui/qode": "^18.12.1",
     "@ptkdev/logger": "^1.8.0",
     "alsong": "^3.0.1",
     "body-parser": "^1.20.1",
@@ -39,21 +39,20 @@
   },
   "devDependencies": {
     "@nodegui/packer": "^1.5.0",
+    "@total-typescript/ts-reset": "^0.4.2",
     "@types/koa__cors": "^3.3.0",
     "@types/koa-bodyparser": "^4.3.10",
     "@types/koa-router": "^7.4.4",
+    "@types/rollup-plugin-natives": "^0.7.0",
     "@typescript-eslint/eslint-plugin": "^5.48.2",
     "cross-env": "^7.0.3",
     "eslint": "^8.32.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-prettier": "^4.2.1",
-    "file-loader": "^6.2.0",
-    "node-loader": "^2.0.0",
-    "terser-webpack-plugin": "^5.3.6",
     "ts-loader": "^9.4.2",
     "ts-node": "^10.9.1",
-    "typescript": "^4.9.4",
-    "webpack": "^5.75.0",
-    "webpack-cli": "^5.0.1"
+    "typescript": "^5.0.0",
+    "vite": "^4.3.9",
+    "vite-plugin-static-copy": "^0.16.0"
   }
 }

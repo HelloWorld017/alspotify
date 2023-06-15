@@ -6,7 +6,6 @@ import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 import Router from 'koa-router';
 import utils, {ConfigApi} from './utils/Config';
-import nativeRequire from './utils/NativeRequire';
 import Observable, {Observer} from './utils/Observable';
 import fs from 'fs';
 import * as path from 'path';
@@ -64,6 +63,7 @@ class Alspotify {
   private lastUpdate = -1;
   private app: Koa;
   private initialized: boolean;
+  private initPromise: Promise<void>;
   public plugins: Plugin[] = [];
 
   constructor() {
@@ -98,21 +98,24 @@ class Alspotify {
     if (!fs.existsSync(pluginDirectory)) {
       fs.mkdirSync(pluginDirectory);
     }
-    fs.readdirSync(pluginDirectory).forEach((file) => {
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        const plugin = nativeRequire('./plugins/' + file);
+    
+    this.initPromise = Promise.all(
+      fs.readdirSync(pluginDirectory).map(async (file) => {
+        const plugin = await import('./plugins/' + file) as Plugin;
 
-        if (plugin) {
-          this.plugins.push(plugin as Plugin);
-        }
-      } catch (e) {
-        logger.error(String(e));
-      }
+        if (plugin) this.plugins.push(plugin);
+      }),
+    ).then(() => {
+      this.initialized = false;
+    }).catch((err) => {
+      logger.error(String(err));
     });
 
     this.app = app;
-    this.initialized = false;
+  }
+
+  async until() {
+    await this.initPromise;
   }
 
   init() {
@@ -269,9 +272,9 @@ class Alspotify {
 }
 
 const api = new Alspotify();
+api.init();
 
 export default () => {
-  api.init();
 
   return api;
 };

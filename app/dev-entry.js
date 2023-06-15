@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires,no-undef
 require('ts-node').register({
   compilerOptions: {
-    module: 'commonjs',
+    module: 'nodenext',
   },
   transpileOnly: true
 });
