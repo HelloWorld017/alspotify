@@ -101,9 +101,9 @@ class Alspotify {
       fs.mkdirSync(pluginDirectory);
     }
 
-    this.initPromise = Promise.all([
+    this.initPromise = Promise.allSettled([
       ...fs.readdirSync(pluginDirectory).map(async (file) => {
-        const plugin = await import('./plugins/' + file) as Plugin;
+        const plugin = (await import('./plugins/' + file)).default as Plugin;
 
         if (plugin) this.plugins.push(plugin);
       }),
