@@ -15,12 +15,13 @@ import LyricsView from '../components/LyricsView';
 import NowPlayingView from '../components/NowPlayingView';
 import utils, {ConfigApi} from '../utils/Config';
 import LyricsFinderWindow from './LyricsFinderWindow';
+import path from 'path';
 
 const config = utils();
 const api = Alspotify();
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const IconMusicPicture = require('../assets/IconMusic.png') as string;
+const IconMusicPicture = path.resolve(process.env.NODE_ENV === 'production' ? __dirname : `${__dirname}/../`, './assets/IconMusic.png');
 
 
 class MainWindow extends QMainWindow {

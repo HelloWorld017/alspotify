@@ -2,7 +2,7 @@ node_modules
 /config.json
 /deploy/**/build
 /dist
-/patches/alsong*
+/.rollup.cache/
 .idea
 error.log
 debug.log

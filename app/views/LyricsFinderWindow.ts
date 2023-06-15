@@ -5,8 +5,9 @@ import utils, { ConfigApi } from '../utils/Config';
 import Alspotify from '../Alspotify';
 import LyricsMapper from '../LyricsMapper';
 import alsong from 'alsong';
+import path from 'path';
 
-const IconMusicPicture = require('../assets/IconMusic.png') as string;
+const IconMusicPicture = path.resolve(process.env.NODE_ENV === 'production' ? __dirname : `${__dirname}/../../`, './assets/IconMusic.png');
 
 const config = utils();
 const api = Alspotify();
