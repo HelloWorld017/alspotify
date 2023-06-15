@@ -79,6 +79,7 @@ class Alspotify {
     const router = new Router();
 
     router.post('/', async (ctx) => {
+      ctx.status = 200;
       await this.update(ctx.request.body as RequestBody);
     });
 
