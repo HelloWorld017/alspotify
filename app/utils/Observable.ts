@@ -43,23 +43,23 @@ class Observable {
 
   createNewPrototype<T extends object>(observers: ObserverBase): ObserverPrototypeGenerator<T> {
     return {
-      $observe: () => this.observe.bind(this) as Effect,
+      $observe: () => this.observe.bind(this),
 
-      $set: target => {
-        return value => {
+      $set: (target) => {
+        return (value) => {
           for (const key in target) {
             delete target[key];
           }
 
           for (const key in value) {
-            target[key as keyof T] = value[key] as T[keyof T];
+            target[key] = value[key];
           }
 
           this.callObservers(observers);
         };
       },
 
-      $assign: target => {
+      $assign: (target) => {
         return value => {
           Object.assign(target, value);
           this.callObservers(observers);

@@ -40,16 +40,13 @@ class LyricItem extends QLabel {
     });
 
     api.info.$observe(() => {
-      if (!api.info.lyric || !api.info.lyric.current)
-        {return;}
+      if (!api.info.lyric || !api.info.lyric.current) return;
 
       let currentLyric = api.info.lyric.current[lyricId];
-      if (currentLyric)
-        {currentLyric = currentLyric.trim();}
+      if (currentLyric) currentLyric = currentLyric.trim();
 
       if (currentLyric) {
-        if (!this.isVisible())
-          {this.show();}
+        if (!this.isVisible()) this.show();
 
         const boundingRect = this.fontMetrics.boundingRect(currentLyric);
         const elideWidth = config.style.lyric.width - 20;
