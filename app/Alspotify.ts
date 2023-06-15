@@ -100,11 +100,11 @@ class Alspotify {
     }
     fs.readdirSync(pluginDirectory).forEach((file) => {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        const plugin = nativeRequire('./plugins/' + file);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
+        const plugin: Plugin = nativeRequire('./plugins/' + file);
 
         if (plugin) {
-          this.plugins.push(plugin as Plugin);
+          this.plugins.push(plugin);
         }
       } catch (e) {
         logger.error(String(e));
@@ -207,7 +207,8 @@ class Alspotify {
           return alsong.getLyricById(lyricItems[0].lyricId);
         })
         .then((lyricData) => lyricData.lyric)
-        .catch(() => {
+        .catch((it) => {
+          logger.error(String(it));
           if (typeof spotifyLyric !== 'object') {
             return {};
           }
