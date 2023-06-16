@@ -274,6 +274,5 @@ class Alspotify {
 }
 
 const api = new Alspotify();
-void api.init();
 
 export default () => api;
