@@ -213,7 +213,8 @@ class Alspotify {
         return alsong.getLyricById(lyricItems[0].lyricId);
       })
       .then((lyricData) => lyricData.lyric)
-      .catch(() => {
+      .catch((it) => {
+        logger.error(String(it));
         if (typeof spotifyLyric !== 'object') return {};
 
         return spotifyLyric;
