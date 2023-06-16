@@ -6,10 +6,9 @@
 
 ### Screenshot
 
-Spotify                    |  Youtube Music
-:-------------------------:|:-------------------------:
-![Spotify Screenshot](https://i.imgur.com/0JJMhaU.png) | ![YouTube Music Screenshot](https://user-images.githubusercontent.com/16558115/213177792-f9169231-9727-4dde-8fa9-72fad393cd9d.png)
-
+|                        Spotify                         |                                                           Youtube Music                                                            |
+|:------------------------------------------------------:|:----------------------------------------------------------------------------------------------------------------------------------:|
+| ![Spotify Screenshot](https://i.imgur.com/0JJMhaU.png) | ![YouTube Music Screenshot](https://user-images.githubusercontent.com/16558115/213177792-f9169231-9727-4dde-8fa9-72fad393cd9d.png) |
 
 ## Warning
 
@@ -32,9 +31,9 @@ Spotify                    |  Youtube Music
    * 이후 `spicetify config extensions alspotify.js` 명령어로 `alspotify.js`를 추가해주세요.  
    * `spicetify apply` 명령어로 적용하면 스포티파이가 꺼졌다 켜지면서 적용됩니다.
    
-### Youtube Music
+### YouTube Music
 
-1. [Youtube Music Desktop 설치](https://github.com/th-ch/youtube-music/releases)
+1. [YouTube Music Desktop 설치](https://github.com/th-ch/youtube-music/releases)
    * 다음 링크의 지시사항에 따라 `Youtube Music Desktop`을 설치해주세요.
    
 2. `Youtube Music Desktop`을 실행하고, 상단 메뉴의 `plugins`를 클릭한 뒤 `tuna-obs`를 활성화해주세요.
@@ -53,11 +52,18 @@ Spotify                    |  Youtube Music
 
 ## Config
 
-Alspotify 폴더의 `config.json` 을 편집하여 폰트 및 색상, 표시되는 자막 수 등을 변경하실 수 있습니다.
+1. Alspotify 폴더의 `config.json` 을 편집하여 폰트 및 색상, 표시되는 자막 수 등을 변경하실 수 있습니다.
 
-`KoPubWorld 돋움체 Medium`으로 설정한 예제 |
-:------------------------------------:|
+ `KoPubWorld 돋움체 Medium`으로 설정한 예제 |
+:--------------------------------:|
 ![example image](https://user-images.githubusercontent.com/16558115/213178938-1b6249f5-1646-49b7-8564-56a28d08f780.png)
+
+2. 트레이 아이콘의 `Lyrics`을 선택하여 현재 재생 중인 노래의 가사를 다른 가사로 교체할 수 있습니다.
+
+곡을 검색하고, 다른 가사를 적용한 예제 |
+:--------------------------------:|
+![image](https://github.com/Su-Yong/alspotify/assets/16558115/b1fa0f61-efcf-4aae-85d6-9219d10888e2)
+
 
 
 ## Shutdown
@@ -71,7 +77,7 @@ Alspotify 폴더의 `config.json` 을 편집하여 폰트 및 색상, 표시되�
 - [ ] 설정 프로그램 제작
 - [x] 시스템 트레이 기능 지원
 - [x] 다중 실행 시의 충돌 방지
-- [ ] 가사 찾기 알고리즘 개선, 알송 서버에서 가져온 여러 가사 중 가장 재생시간이 맞는 가사 찾도록 가사 검색기 추가
+- [x] 가사 찾기 알고리즘 개선, 알송 서버에서 가져온 여러 가사 중 가장 재생시간이 맞는 가사 찾도록 가사 검색기 추가
 
 ## Known Bugs
 - [ ] 재생 초반에 프로그레스바에 곡면 모서리가 적용안됨

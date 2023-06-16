@@ -1,11 +1,10 @@
-import {Direction, QBoxLayout, QWidget} from '@nodegui/nodegui';
+import { Direction, QBoxLayout, QWidget } from '@nodegui/nodegui';
 import utils from '../../utils/Config';
 import LyricItem from './LyricItem';
 
 const config = utils();
 
 class LyricsView extends QWidget {
-
   constructor() {
     super();
 

@@ -13,17 +13,22 @@ import Alspotify from '../Alspotify';
 import LyricsView from '../components/LyricsView';
 import NowPlayingView from '../components/NowPlayingView';
 import utils, {ConfigApi} from '../utils/Config';
+import LyricsFinderWindow from './LyricsFinderWindow';
+import path from 'path';
 
 const config = utils();
 const api = Alspotify();
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const IconMusicPicture = require('../assets/IconMusic.png') as string;
+const IconMusicPicture = path.resolve(process.env.NODE_ENV === 'production' ? __dirname : `${__dirname}/../`, './assets/IconMusic.png');
 
 
 class MainWindow extends QMainWindow {
+  private lyricsFinderWindow: QMainWindow;
+
   constructor() {
     super();
+
     this.setWindowTitle('Alspotify');
     const systemIcon = new QIcon(IconMusicPicture);
     const tray = new QSystemTrayIcon();
@@ -35,6 +40,7 @@ class MainWindow extends QMainWindow {
     this.setWindowFlag(WindowType.FramelessWindowHint, true);
     this.setWindowFlag(WindowType.WindowStaysOnTopHint, true);
     this.setWindowFlag(WindowType.WindowTransparentForInput, true);
+    this.setWindowFlag(WindowType.Popup, true);
     this.setWindowFlag(WindowType.SubWindow, true);
     this.setAttribute(WidgetAttribute.WA_NoSystemBackground, true);
     this.setAttribute(WidgetAttribute.WA_TranslucentBackground, true);
@@ -68,10 +74,17 @@ class MainWindow extends QMainWindow {
           }
         `);
     });
+
+    this.lyricsFinderWindow = new LyricsFinderWindow();
   }
 
   #getTrayMenu() {
     const menu = new QMenu();
+
+    const settingsAction = menu.addAction('Lyrics');
+    settingsAction.addEventListener('triggered', () => {
+      this.lyricsFinderWindow.show();
+    });
 
     const exitAction = menu.addAction('Exit');
     exitAction.addEventListener('triggered', () => {

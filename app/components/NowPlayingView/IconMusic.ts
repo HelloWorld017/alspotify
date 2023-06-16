@@ -1,10 +1,11 @@
 import {AspectRatioMode, QLabel, QPixmap, TransformationMode} from '@nodegui/nodegui';
 import utils from '../../utils/Config';
+import path from 'path';
 
 const config = utils();
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const IconMusicPicture = require('../../assets/IconMusic.png') as string;
+const IconMusicPicture = path.resolve(process.env.NODE_ENV === 'production' ? __dirname : `${__dirname}/../../`, './assets/IconMusic.png');
 
 class IconMusic extends QLabel {
   constructor() {

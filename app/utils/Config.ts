@@ -6,13 +6,14 @@ import fs from 'fs';
 interface ConfigStruct {
   style: {
     font: string;
+
     nowPlaying: {
       color: string;
       background: string;
       backgroundProgress: string;
       fontSize: number;
       width: number;
-    },
+    };
     lyric: {
       color: string;
       background: string;
@@ -20,22 +21,25 @@ interface ConfigStruct {
       width: number;
       height: number;
       align: string;
-    }
-  },
+    };
+  };
+
   lyric: {
     count: number;
-    overflow: string;
-  },
+    overflow: 'elide' | 'wrap' | 'none';
+  };
+
   windowPosition: {
     x: number;
     y: number;
     w: number;
     h: number;
-  }
+  };
+
+  syncThrottle: number;
 }
 
 class Config {
-
   public observable: Observer<ConfigStruct> = null;
   private config: ConfigStruct = this.defaultConfig;
   private initialized = false;
@@ -68,7 +72,7 @@ class Config {
 
       lyric: {
         count: 3,
-        overflow: 'none' // 'elide' or 'wrap' or 'none'
+        overflow: 'none'
       },
 
       windowPosition: {
@@ -76,22 +80,26 @@ class Config {
         y: maxBottom - 250,
         w: 500,
         h: 150
-      }
+      },
+
+      syncThrottle: 1000 * 3,
     };
   }
 
   init() {
-    if (this.initialized) {return;}
+    if (this.initialized) {
+      return;
+    }
 
     try {
       const configRaw = fs.readFileSync('./config.json', 'utf8');
-      this.config = deepmerge(
+
+      this.config = deepmerge<ConfigStruct>(
         this.defaultConfig,
-        JSON.parse(configRaw) as ConfigStruct,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        {arrayMerge: (d, s) => s}
+        JSON.parse(configRaw),
+        { arrayMerge: (_: ConfigStruct[], s: ConfigStruct[]) => s }
       );
-    } catch (e) {
+    } catch {
       this.config = this.defaultConfig;
       this.save();
     }
