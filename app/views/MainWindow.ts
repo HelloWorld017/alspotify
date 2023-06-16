@@ -40,6 +40,7 @@ class MainWindow extends QMainWindow {
     this.setWindowFlag(WindowType.FramelessWindowHint, true);
     this.setWindowFlag(WindowType.WindowStaysOnTopHint, true);
     this.setWindowFlag(WindowType.WindowTransparentForInput, true);
+    this.setWindowFlag(WindowType.Popup, true);
     this.setWindowFlag(WindowType.SubWindow, true);
     this.setAttribute(WidgetAttribute.WA_NoSystemBackground, true);
     this.setAttribute(WidgetAttribute.WA_TranslucentBackground, true);

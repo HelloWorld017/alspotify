@@ -1,4 +1,16 @@
-import { QWidget, QLineEdit, QPushButton, QMainWindow, FlexLayout, QLabel, QTimeEdit, QTime, QApplication, QIcon } from '@nodegui/nodegui';
+import {
+  QWidget,
+  QLineEdit,
+  QPushButton,
+  QMainWindow,
+  FlexLayout,
+  QLabel,
+  QTimeEdit,
+  QTime,
+  QApplication,
+  QIcon,
+  WindowType
+} from '@nodegui/nodegui';
 import alsong from 'alsong';
 import Alspotify from '../Alspotify';
 import LyricsMapper from '../LyricsMapper';
