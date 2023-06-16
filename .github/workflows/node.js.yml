@@ -44,17 +44,17 @@ jobs:
       if: matrix.os == 'windows-latest'
       uses: actions/upload-artifact@v3
       with:
-        name: Alspotify
+        name: Alspotify-win
         path: './deploy/win32/build'
     - name: Upload Linux Artifact
       if: matrix.os == 'ubuntu-latest'
       uses: actions/upload-artifact@v3
       with:
-        name: Alspotify
+        name: Alspotify-linux
         path: './deploy/linux/build'
     - name: Upload macOS Artifact
       if: matrix.os == 'macOS-latest'
       uses: actions/upload-artifact@v3
       with:
-        name: Alspotify
+        name: Alspotify-macos
         uses: './deploy/macos/build'
