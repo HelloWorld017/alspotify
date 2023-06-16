@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=AlSpotify
+Exec=AppRun %F
+Icon=default
+Comment=Alspotify
+Terminal=false
+Categories=Utility;

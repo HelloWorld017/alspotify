@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest]
         node-version: [18.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
@@ -27,8 +27,16 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+    - name: Install Packages (Linux-only)
+      if: matrix.os == 'ubuntu-latest'
+      run: sudo apt install -y libfuse2 libopengl-dev libegl1
     - run: npm i
-    - run: npm run dist
+    - name: Build (Linux, Windows)
+      if: matrix.os != 'macOS-latest'
+      run: ARCH=x86_64 npm run dist
+    - name: Build (macOS)
+      if: matrix.os == 'macOS-latest'
+      run: npm run dist
     - name: Upload Windows Artifact
       if: matrix.os == 'windows-latest'
       uses: actions/upload-artifact@v3
