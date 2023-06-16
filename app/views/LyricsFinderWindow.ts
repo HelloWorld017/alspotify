@@ -91,16 +91,16 @@ class LyricsFinderWindow extends QMainWindow {
 
     const pushButton = new QPushButton();
     pushButton.setText('Search');
-    pushButton.addEventListener('clicked', void (async () => {
+    pushButton.addEventListener('clicked', () => {
       const durationTime = this.duration.time()
-      await this.search(
+      void this.search(
         this.artist.text(),
         this.title.text(),
         (
           (durationTime.hour() * 3600) + (durationTime.minute() * 60) + durationTime.second()
         ) * 1000
       );
-    }));
+    });
 
     layout.addWidget(pushButton);
 

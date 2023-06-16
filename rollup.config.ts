@@ -4,6 +4,7 @@ import image from '@rollup/plugin-image';
 import json from '@rollup/plugin-json';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
+import terser from '@rollup/plugin-terser';
 import { defineConfig } from 'rollup';
 import copy from 'rollup-plugin-copy'
 import nativePlugin from 'rollup-plugin-natives';
@@ -49,6 +50,7 @@ export default defineConfig({
     }),
     replace({
       'process.env.NODE_ENV': JSON.stringify(nodeEnv),
-    })
+    }),
+    terser(),
   ],
 });
