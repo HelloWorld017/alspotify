@@ -64,8 +64,7 @@ class Alspotify {
   private lastUri: string = null;
   private lastUpdate = -1;
   private app: Koa;
-  private initialized: boolean;
-  private readonly initPromise: Promise<void>;
+  private initialized = false;
   public plugins: Plugin[] = [];
 
   constructor() {
@@ -80,9 +79,10 @@ class Alspotify {
 
     const router = new Router();
 
-    router.post('/', async (ctx) => {
+    router.post('/', async (ctx, next) => {
       ctx.status = 200;
-      await this.update(ctx.request.body as RequestBody);
+      void this.update(ctx.request.body as RequestBody);
+      await next();
     });
 
     router.get('/config', () => {
@@ -99,38 +99,33 @@ class Alspotify {
     });
 
     app.use(router.routes()).use(router.allowedMethods());
+    this.app = app;
+  }
+
+  async init() {
+    if (this.initialized) {
+      return;
+    }
+
+    const optionDirectory = path.join(__dirname, 'options');
+    if (!fs.existsSync(optionDirectory)) {
+      fs.mkdirSync(optionDirectory);
+    }
+    await lyricsMapper.readFromFile().catch((err) => logger.error(String(err)));
 
     const pluginDirectory = path.join(__dirname, 'plugins');
     if (!fs.existsSync(pluginDirectory)) {
       fs.mkdirSync(pluginDirectory);
     }
-
-    this.initPromise = Promise.allSettled([
+    await Promise.allSettled([
       ...fs.readdirSync(pluginDirectory).map(async (file) => {
         const plugin = (await import('./plugins/' + file) as {
           default: Plugin;
         }).default;
 
         if (plugin) this.plugins.push(plugin);
-      }),
-      lyricsMapper.readFromFile(),
-    ]).then(() => {
-      this.initialized = false;
-    }).catch((err) => {
-      logger.error(String(err));
-    });
-
-    this.app = app;
-  }
-
-  async until() {
-    await this.initPromise;
-  }
-
-  init() {
-    if (this.initialized) {
-      return;
-    }
+      })
+    ]).catch((err) => logger.error(String(err)));
 
     this.initialized = true;
     this.app.listen(1608, '127.0.0.1');
@@ -209,22 +204,27 @@ class Alspotify {
 
   async updateLyric(spotifyLyric: { [key: string]: string[] }) {
     try {
-      // let lyric: Record<string, string[]> = {};
-      const lyric = (!LyricsMapper().get(this.info.coverUrl) ? await alsong(this.info.artist, this.info.title, {
-        playtime: Number(this.info.duration),
-      }).then((lyricItems) => {
-        logger.info(
-          `Retrieved alsong info: ${lyricItems[0].artist} - ${lyricItems[0].title}`
-        );
-        return alsong.getLyricById(lyricItems[0].lyricId);
-      })
-      .then((lyricData) => lyricData.lyric)
-      .catch((it) => {
-        logger.error(String(it));
-        if (typeof spotifyLyric !== 'object') return {};
+      let lyric: Record<string, string[]>;
 
-        return spotifyLyric;
-      }) : (await alsong.getLyricById(LyricsMapper().get(this.info.coverUrl))).lyric);
+      if (!LyricsMapper().get(this.info.coverUrl)) {
+        lyric = await alsong(this.info.artist, this.info.title, {
+          playtime: Number(this.info.duration),
+        }).then((lyricItems) => {
+          logger.info(
+            `Retrieved alsong info: ${lyricItems[0].artist} - ${lyricItems[0].title}`
+          );
+          return alsong.getLyricById(lyricItems[0].lyricId);
+        })
+          .then((lyricData) => lyricData.lyric)
+          .catch((it) => {
+            logger.error(String(it));
+            if (typeof spotifyLyric !== 'object') return {};
+
+            return spotifyLyric;
+          });
+      } else {
+        lyric = (await alsong.getLyricById(LyricsMapper().get(this.info.coverUrl))).lyric;
+      }
 
       lyric['0'] ??= [];
 
@@ -274,6 +274,6 @@ class Alspotify {
 }
 
 const api = new Alspotify();
-api.init();
+void api.init();
 
 export default () => api;
