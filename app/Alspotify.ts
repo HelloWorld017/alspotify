@@ -65,6 +65,7 @@ class Alspotify {
   private lastUpdate = -1;
   private app: Koa;
   private initialized = false;
+  private readonly titleParserRegex = /(?:[[({【]([^\])}】]+)[\])}】]\s*)*([^[({【「\])}】」\-/]+)(?:[[({【]([^\])}】]+)[\])}】]\s*)*/g;
   public plugins: Plugin[] = [];
 
   constructor() {
@@ -178,7 +179,7 @@ class Alspotify {
     ) {
       return;
     }
-
+    
     this.plugins.forEach((plugin) => {
       try {
         plugin.preprocess?.(body);
@@ -187,10 +188,40 @@ class Alspotify {
       }
     });
 
+    let artists: string[];
+    let title: string;
+
+    if (config.experimental?.titleParser) {
+      artists = [...body.data.artists];
+      const matchResult = Array.from(body.data.title.matchAll(this.titleParserRegex));
+      if (matchResult) {
+        if (matchResult.length > 1) {
+          if (matchResult[0] && matchResult[0][1]) {
+            artists.unshift(matchResult[0][1].trim());
+            title = matchResult[0][2].trim();
+          } else {
+            if (matchResult[0] && matchResult[0][2]) {
+              artists.unshift(matchResult[0][2].trim());
+            }
+            title = matchResult[1][2].trim();
+          }
+        } else {
+          if (matchResult[0][1]) {
+            artists.unshift(matchResult[0][1].trim());
+          }
+          title = matchResult[0][2].trim();
+        }
+      }
+      artists = Array.from(new Set(artists));
+    } else {
+      artists = body.data.artists;
+      title = body.data.title;
+    }
+
     this.info.$assign({
       playing: true,
-      title: body.data.title,
-      artist: body.data.artists.join(', '),
+      title,
+      artist: artists.join(', '),
       progress: body.data.progress,
       duration: body.data.duration,
       coverUrl: body.data.cover_url,

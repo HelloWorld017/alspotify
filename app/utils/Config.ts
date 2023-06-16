@@ -24,6 +24,10 @@ interface ConfigStruct {
     };
   };
 
+  experimental?: {
+    titleParser: boolean;
+  };
+
   lyric: {
     count: number;
     overflow: 'elide' | 'wrap' | 'none';
@@ -68,6 +72,10 @@ class Config {
           height: 150,
           align: 'right'
         }
+      },
+
+      experimental: {
+        titleParser: false,
       },
 
       lyric: {
