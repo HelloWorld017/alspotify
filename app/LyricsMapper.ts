@@ -1,8 +1,8 @@
+import Alspotify from './Alspotify';
+import utils from './utils/Config';
 import fs from 'fs/promises';
 import path from 'path';
 
-import utils from './utils/Config';
-import Alspotify from './Alspotify';
 
 const config = utils();
 
@@ -14,7 +14,7 @@ class LyricsMapper {
 
   set(coverId: string, lyricId: number) {
     this.data.set(coverId, lyricId);
-    Alspotify().updateLyric({});
+    void Alspotify().updateLyric({});
 
     this.tryToSync();
   }
@@ -29,23 +29,23 @@ class LyricsMapper {
 
   public tryToSync() {
     if (this.syncThrottle !== null) clearTimeout(this.syncThrottle);
-    
-    this.syncThrottle = setTimeout(async () => {
-      this.writeToFile();
+
+    this.syncThrottle = setTimeout(() => {
+      void this.writeToFile();
     }, config.syncThrottle);
   }
 
   public async readFromFile(force = false) {
     const rawData = await fs.readFile(this.optionsDirectory, 'utf-8');
     const data = JSON.parse(rawData);
-    const result = new Map(Object.entries(data));
+    const result = new Map<string, number>(Object.entries(data));
 
     if (force || this.data.size === 0) {
       this.data = result;
-      Alspotify().updateLyric({});
+      void Alspotify().updateLyric({});
     }
   }
-  
+
   public async writeToFile() {
     await fs.mkdir(path.dirname(this.optionsDirectory), { recursive: true });
 

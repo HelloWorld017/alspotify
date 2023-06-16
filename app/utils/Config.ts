@@ -90,14 +90,14 @@ class Config {
     if (this.initialized) {
       return;
     }
-    
+
     try {
       const configRaw = fs.readFileSync('./config.json', 'utf8');
 
       this.config = deepmerge<ConfigStruct>(
         this.defaultConfig,
         JSON.parse(configRaw),
-        { arrayMerge: (_, s) => s }
+        { arrayMerge: (_: ConfigStruct[], s: ConfigStruct[]) => s }
       );
     } catch {
       this.config = this.defaultConfig;

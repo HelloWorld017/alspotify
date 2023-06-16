@@ -1,23 +1,20 @@
-import { QWidget, QLineEdit, QBoxLayout, QPushButton, QMainWindow, FlexLayout, QLabel, QTimeEdit, QTime,  QApplication, QWidgetSignals, QIcon } from '@nodegui/nodegui';
-import LyricsView from '../components/LyricsView';
-import NowPlayingView from '../components/NowPlayingView';
-import utils, { ConfigApi } from '../utils/Config';
+import { QWidget, QLineEdit, QPushButton, QMainWindow, FlexLayout, QLabel, QTimeEdit, QTime, QApplication, QIcon } from '@nodegui/nodegui';
+import alsong from 'alsong';
 import Alspotify from '../Alspotify';
 import LyricsMapper from '../LyricsMapper';
-import alsong from 'alsong';
+import NowPlayingView from '../components/NowPlayingView';
 import path from 'path';
 
 const IconMusicPicture = path.resolve(process.env.NODE_ENV === 'production' ? __dirname : `${__dirname}/../../`, './assets/IconMusic.png');
 
-const config = utils();
 const api = Alspotify();
 const lyricsMapper = LyricsMapper();
 
 class LyricsFinderWindow extends QMainWindow {
-  private artist: QLineEdit;
-  private title: QLineEdit;
-  private duration: QTimeEdit;
-  private searchResultContainer: QWidget;
+  private readonly artist: QLineEdit;
+  private readonly title: QLineEdit;
+  private readonly duration: QTimeEdit;
+  private readonly searchResultContainer: QWidget;
   private searchResultItems: {
     container: QWidget;
     title: QLabel;
@@ -94,10 +91,16 @@ class LyricsFinderWindow extends QMainWindow {
 
     const pushButton = new QPushButton();
     pushButton.setText('Search');
-    pushButton.addEventListener('clicked', async () => {
-      const durationQtime = this.duration.time()
-      this.search(this.artist.text(), this.title.text(), (durationQtime.hour() * 3600 + durationQtime.minute() * 60 + durationQtime.second()) * 1000);
-    });
+    pushButton.addEventListener('clicked', void (async () => {
+      const durationTime = this.duration.time()
+      await this.search(
+        this.artist.text(),
+        this.title.text(),
+        (
+          (durationTime.hour() * 3600) + (durationTime.minute() * 60) + durationTime.second()
+        ) * 1000
+      );
+    }));
 
     layout.addWidget(pushButton);
 
@@ -140,7 +143,7 @@ class LyricsFinderWindow extends QMainWindow {
         artist,
         duration,
         apply,
-        onClick: () => {},
+        onClick: null,
       };
       searchResultLayout.addWidget(itemContainer);
     }
@@ -149,7 +152,7 @@ class LyricsFinderWindow extends QMainWindow {
 
     root.setStyleSheet(`
       #root {
-        background-color: #f8fafc;   
+        background-color: #f8fafc;
       }
 
       #item-container {
@@ -226,7 +229,7 @@ class LyricsFinderWindow extends QMainWindow {
     const duration = new QTime(~~(durationSecs / 3600), ~~(durationSecs / 60), api.info.duration % 60);
     this.duration.setTime(duration);
 
-    this.search(api.info.artist, api.info.title, api.info.duration);
+    void this.search(api.info.artist, api.info.title, api.info.duration);
   }
 
   async search(artist: string, title: string, duration: number) {
@@ -253,7 +256,7 @@ class LyricsFinderWindow extends QMainWindow {
         item.onClick = () => {
           lyricsMapper.set(api.info.coverUrl, result[index].lyricId);
 
-          this.search(artist, title, duration);
+          void this.search(artist, title, duration);
         };
 
         item.apply.addEventListener('clicked', item.onClick);

@@ -1,7 +1,6 @@
 import {
   FlexLayout,
   QApplication,
-  QDialog,
   QIcon,
   QMainWindow,
   QMenu,
@@ -85,7 +84,7 @@ class MainWindow extends QMainWindow {
     settingsAction.addEventListener('triggered', () => {
       this.lyricsFinderWindow.show();
     });
-  
+
     const exitAction = menu.addAction('Exit');
     exitAction.addEventListener('triggered', () => {
       const qApp = QApplication.instance();

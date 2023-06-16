@@ -5,11 +5,11 @@ import alsong from 'alsong';
 import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 import Router from 'koa-router';
+import LyricsMapper, { lyricsMapper } from './LyricsMapper';
 import utils, { ConfigApi } from './utils/Config';
 import Observable, { Observer } from './utils/Observable';
 import fs from 'fs';
 import * as path from 'path';
-import LyricsMapper, { lyricsMapper } from './LyricsMapper';
 
 const logger = new Logger({
   write: true,
@@ -65,7 +65,7 @@ class Alspotify {
   private lastUpdate = -1;
   private app: Koa;
   private initialized: boolean;
-  private initPromise: Promise<void>;
+  private readonly initPromise: Promise<void>;
   public plugins: Plugin[] = [];
 
   constructor() {
@@ -85,9 +85,13 @@ class Alspotify {
       await this.update(ctx.request.body as RequestBody);
     });
 
-    router.get('/config', () => { });
+    router.get('/config', () => {
+      // TODO: get config
+    });
 
-    router.post('/config', () => { });
+    router.post('/config', () => {
+      // TODO: set config
+    });
 
     router.post('/shutdown', () => {
       const qApp = QApplication.instance();
@@ -103,7 +107,9 @@ class Alspotify {
 
     this.initPromise = Promise.allSettled([
       ...fs.readdirSync(pluginDirectory).map(async (file) => {
-        const plugin = (await import('./plugins/' + file)).default as Plugin;
+        const plugin = (await import('./plugins/' + file) as {
+          default: Plugin;
+        }).default;
 
         if (plugin) this.plugins.push(plugin);
       }),

@@ -43,7 +43,7 @@ class Observable {
 
   createNewPrototype<T extends object>(observers: ObserverBase): ObserverPrototypeGenerator<T> {
     return {
-      $observe: () => this.observe.bind(this),
+      $observe: () => void this.observe.bind(this),
 
       $set: (target) => {
         return (value) => {

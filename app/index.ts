@@ -1,11 +1,10 @@
-
-import MainWindow from './views/MainWindow';
-import Alspotify from './Alspotify';
 import { QApplication } from '@nodegui/nodegui';
+import Alspotify from './Alspotify';
+import MainWindow from './views/MainWindow';
 
 const api = Alspotify();
 
-(async () => {
+void (async () => {
   await api.until();
 
   const app = QApplication.instance();
