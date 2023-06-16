@@ -5,26 +5,9 @@
 
 (function Alspotify() {
   const LyricResolvers = {
-    v1(uri) {
-      return new Promise((resolve, reject) => {
-        Spicetify.CosmosAPI.resolver.get(
-          `hm://lyrics/v1/track/${uri.getBase62Id()}`,
-          (err, payload) => {
-            if (err) {
-              resolve([]);
-              return;
-            }
-
-            const result = payload.getJSONBody();
-            resolve(result.lines);
-          }
-        );
-      });
-    },
-
     v2(uri) {
       return Spicetify.CosmosAsync
-        .get(`hm://lyrics/v1/track/${uri.getBase62Id()}`)
+        .get(`hm://lyrics/v1/track/${uri.id}`)
         .then(payload => payload.lines)
         .catch(err => {
           return [];
@@ -32,7 +15,7 @@
     },
 
     get current() {
-      return this[Spicetify.CosmosAsync ? 'v2' : 'v1'];
+      return this['v2'];
     }
   };
 
@@ -56,6 +39,7 @@
     const uri = Spicetify.Player.data.track.uri;
     if (previousInfo.uri !== uri) {
       return {
+        status: 'playing',
         playing: true,
         title: Spicetify.Player.data.track.metadata.title,
         artists: [Spicetify.Player.data.track.metadata.artist_name],
@@ -67,6 +51,7 @@
     }
 
     return {
+      status: 'playing',
       playing: true,
       cover_url: uri,
       duration: Spicetify.Player.getDuration(),

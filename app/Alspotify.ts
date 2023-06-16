@@ -1,17 +1,30 @@
 import cors from '@koa/cors';
-import { QApplication } from '@nodegui/nodegui';
+import { QApplication, QMenu } from '@nodegui/nodegui';
 import Logger from '@ptkdev/logger';
 import alsong from 'alsong';
 import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 import Router from 'koa-router';
-import utils from './utils/Config';
-import Observable, {Observer} from './utils/Observable';
+import LyricsMapper, { lyricsMapper } from './LyricsMapper';
+import utils, { ConfigApi } from './utils/Config';
+import Observable, { Observer } from './utils/Observable';
+import fs from 'fs';
+import * as path from 'path';
 
-const logger = new Logger();
+const logger = new Logger({
+  write: true,
+  path: {
+    debug_log: path.join(__dirname, '..', '/debug.log'),
+    error_log: path.join(__dirname, '..', '/error.log')
+  },
+  rotate: {
+    size: '10K',
+    encoding: 'utf-8'
+  }
+});
 const config = utils();
 
-interface Information {
+interface TunaOBSPayload {
   playing: boolean;
   title: string;
   artist: string;
@@ -24,6 +37,7 @@ interface Information {
     };
     current?: string[];
   };
+  coverUrl: string;
 }
 
 interface RequestBody {
@@ -40,16 +54,22 @@ interface RequestBody {
   }
 }
 
+interface Plugin {
+  configureMenu?: (config: typeof ConfigApi, menu: QMenu) => void
+  preprocess?: (body: RequestBody) => void
+}
+
 class Alspotify {
-  public info: Observer<Information | Record<string, never>>;
+  public info: Observer<TunaOBSPayload | Record<string, never>>;
   private lastUri: string = null;
   private lastUpdate = -1;
   private app: Koa;
-  private initialized: boolean;
-  private titleParserRegex = /(?:[[({【]([^\])}】]+)[\])}】]\s*)*([^[({【「\])}】」\-/]+)(?:[[({【]([^\])}】]+)[\])}】]\s*)*/g;
+  private initialized = false;
+  private readonly titleParserRegex = /(?:[[({【]([^\])}】]+)[\])}】]\s*)*([^[({【「\])}】」\-/]+)(?:[[({【]([^\])}】]+)[\])}】]\s*)*/g;
+  public plugins: Plugin[] = [];
 
   constructor() {
-    this.info = Observable.init<Information | Record<string, never>>(
+    this.info = Observable.init<TunaOBSPayload | Record<string, never>>(
       'api',
       {}
     );
@@ -60,13 +80,19 @@ class Alspotify {
 
     const router = new Router();
 
-    router.post('/', async (ctx) => {
-      await this.update(ctx.request.body as RequestBody);
+    router.post('/', async (ctx, next) => {
+      ctx.status = 200;
+      void this.update(ctx.request.body as RequestBody);
+      await next();
     });
 
-    router.get('/config', () => {});
+    router.get('/config', () => {
+      // TODO: get config
+    });
 
-    router.post('/config', () => {});
+    router.post('/config', () => {
+      // TODO: set config
+    });
 
     router.post('/shutdown', () => {
       const qApp = QApplication.instance();
@@ -74,15 +100,33 @@ class Alspotify {
     });
 
     app.use(router.routes()).use(router.allowedMethods());
-
     this.app = app;
-    this.initialized = false;
   }
 
-  init() {
+  async init() {
     if (this.initialized) {
       return;
     }
+
+    const optionDirectory = path.join(__dirname, 'options');
+    if (!fs.existsSync(optionDirectory)) {
+      fs.mkdirSync(optionDirectory);
+    }
+    await lyricsMapper.readFromFile().catch((err) => logger.error(String(err)));
+
+    const pluginDirectory = path.join(__dirname, 'plugins');
+    if (!fs.existsSync(pluginDirectory)) {
+      fs.mkdirSync(pluginDirectory);
+    }
+    await Promise.allSettled([
+      ...fs.readdirSync(pluginDirectory).map(async (file) => {
+        const plugin = (await import('./plugins/' + file) as {
+          default: Plugin;
+        }).default;
+
+        if (plugin) this.plugins.push(plugin);
+      })
+    ]).catch((err) => logger.error(String(err)));
 
     this.initialized = true;
     this.app.listen(1608, '127.0.0.1');
@@ -102,14 +146,13 @@ class Alspotify {
   }
 
   async update(body: RequestBody) {
-    if (!body.data || body.data.status !== 'playing') {
+    if (body.data?.status !== 'playing') {
       this.info.playing = false;
       return;
     }
 
     if (
-      typeof body.data.progress !== 'number' ||
-      !isFinite(body.data.progress) ||
+      !Number.isFinite(Number(body.data.progress)) ||
       body.data.progress < 0 ||
       body.data.progress > body.data.duration
     ) {
@@ -136,6 +179,14 @@ class Alspotify {
     ) {
       return;
     }
+    
+    this.plugins.forEach((plugin) => {
+      try {
+        plugin.preprocess?.(body);
+      } catch (e) {
+        logger.error(String(e), 'Plugin preprocess');
+      }
+    });
 
     let artists: string[];
     let title: string;
@@ -173,6 +224,7 @@ class Alspotify {
       artist: artists.join(', '),
       progress: body.data.progress,
       duration: body.data.duration,
+      coverUrl: body.data.cover_url,
     });
 
     if (body.data.cover_url && body.data.cover_url !== this.lastUri) {
@@ -183,31 +235,31 @@ class Alspotify {
 
   async updateLyric(spotifyLyric: { [key: string]: string[] }) {
     try {
-      const lyric = await alsong(this.info.artist, this.info.title, {
-        playtime: Number(this.info.duration),
-      })
-        .then((lyricItems) => {
+      let lyric: Record<string, string[]>;
+
+      if (!LyricsMapper().get(this.info.coverUrl)) {
+        lyric = await alsong(this.info.artist, this.info.title, {
+          playtime: Number(this.info.duration),
+        }).then((lyricItems) => {
           logger.info(
             `Retrieved alsong info: ${lyricItems[0].artist} - ${lyricItems[0].title}`
           );
           return alsong.getLyricById(lyricItems[0].lyricId);
         })
-        .then((lyricData) => lyricData.lyric)
-        .catch(() => {
-          if (typeof spotifyLyric !== 'object') {
-            return {};
-          }
+          .then((lyricData) => lyricData.lyric)
+          .catch((it) => {
+            logger.error(String(it));
+            if (typeof spotifyLyric !== 'object') return {};
 
-          return spotifyLyric;
-        });
-
-      if (!lyric['0']) {
-        lyric['0'] = [];
+            return spotifyLyric;
+          });
+      } else {
+        lyric = (await alsong.getLyricById(LyricsMapper().get(this.info.coverUrl))).lyric;
       }
 
-      const timestamp = Object.keys(lyric).sort(
-        (v1, v2) => parseInt(v1) - parseInt(v2)
-      );
+      lyric['0'] ??= [];
+
+      const timestamp = Object.keys(lyric).sort(Number);
       this.info.lyric = {
         timestamp,
         lyric,
@@ -229,9 +281,7 @@ class Alspotify {
   }
 
   updateProgress() {
-    if (!this.info.lyric) {
-      return;
-    }
+    if (!this.info.lyric) return;
 
     let i = 0;
     for (; i < this.info.lyric.timestamp.length; i++) {
@@ -256,8 +306,4 @@ class Alspotify {
 
 const api = new Alspotify();
 
-export default () => {
-  api.init();
-
-  return api;
-};
+export default () => api;

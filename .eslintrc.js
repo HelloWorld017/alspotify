@@ -16,11 +16,7 @@ module.exports = {
     ecmaVersion: 'latest'
   },
   rules: {
-    '@typescript-eslint/no-misused-promises': 'off',
     // '@typescript-eslint/no-floating-promises': 'off',
-    '@typescript-eslint/no-empty-function': 'off',
-    '@typescript-eslint/no-empty-interface': 'off',
-    '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     'import/first': 'error',
     'import/newline-after-import': 'error',
@@ -37,7 +33,6 @@ module.exports = {
     'import/prefer-default-export': 'off',
     'camelcase': ['error', { properties: 'never' }],
     'class-methods-use-this': 'off',
-    'curly': ['error', 'all'],
     'lines-around-comment': [
       'error',
       {
@@ -48,7 +43,6 @@ module.exports = {
       },
     ],
     'max-len': 'off',
-    'no-confusing-arrow': 'off',
     'no-console': ['error', { allow: ['warn', 'error'] }],
     'no-mixed-operators': 'error',
     'no-multi-spaces': ['error', { ignoreEOLComments: true }],
