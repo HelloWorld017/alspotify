@@ -1,14 +1,14 @@
+import alias from '@rollup/plugin-alias';
+import commonjs from '@rollup/plugin-commonjs';
+import image from '@rollup/plugin-image';
+import json from '@rollup/plugin-json';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
+import replace from '@rollup/plugin-replace';
 import { defineConfig } from 'rollup';
+import copy from 'rollup-plugin-copy'
 import nativePlugin from 'rollup-plugin-natives';
 
 import typescript from 'rollup-plugin-typescript2';
-import { nodeResolve } from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
-import json from '@rollup/plugin-json';
-import image from '@rollup/plugin-image';
-import alias from '@rollup/plugin-alias';
-import copy from 'rollup-plugin-copy'
-import replace from '@rollup/plugin-replace';
 
 import path from 'path';
 
@@ -33,7 +33,7 @@ export default defineConfig({
       tsconfig: './tsconfig.json',
     }),
     nativePlugin({
-      copyTo: "dist",
+      copyTo: 'dist',
     }),
     nodeResolve(),
     commonjs(),
