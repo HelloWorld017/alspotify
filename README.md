@@ -4,6 +4,9 @@
 > 알송 가사가 존재하지 않는 경우, 스포티파이의 내장 가사를 표시합니다. (**스포티파이로 재생하는 경우만 해당**)  
 > node.js의 Qt 바인딩인 nodegui를 사용해 제작되었습니다.
 
+> [!WARNING]
+> 이 프로그램 자체는 더 이상 유지보수되지 않고, [Alspotron](https://github.com/organization/alspotron) 에서 새로 개발을 진행중에 있습니다!
+
 ### Screenshot
 
 |                        Spotify                         |                                                           Youtube Music                                                            |
