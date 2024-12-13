@@ -1,0 +1,60 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node-version: [18.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - name: Install Packages (Linux-only)
+      if: matrix.os == 'ubuntu-latest'
+      run: sudo apt install -y libfuse2 libopengl-dev libegl1
+    - run: npm i
+    - name: Build (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: ARCH=x86_64 npm run dist
+    - name: Build (Windows)
+      if: matrix.os == 'windows-latest'
+      run: npm run dist
+    - name: Build (macOS)
+      if: matrix.os == 'macOS-latest'
+      run: npm run dist
+    - name: Upload Windows Artifact
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v3
+      with:
+        name: Alspotify-win
+        path: './deploy/win32/build'
+    - name: Upload Linux Artifact
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v3
+      with:
+        name: Alspotify-linux
+        path: './deploy/linux/build'
+    - name: Upload macOS Artifact
+      if: matrix.os == 'macOS-latest'
+      uses: actions/upload-artifact@v3
+      with:
+        name: Alspotify-macos
+        uses: './deploy/macos/build'
