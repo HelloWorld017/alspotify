@@ -30,13 +30,15 @@ class MainWindow extends QMainWindow {
     super();
 
     this.setWindowTitle('Alspotify');
+
     const systemIcon = new QIcon(IconMusicPicture);
-    const tray = new QSystemTrayIcon();
     this.setWindowIcon(systemIcon);
+
+    const tray = new QSystemTrayIcon(this);
     tray.setIcon(systemIcon);
-    tray.setContextMenu(this.#getTrayMenu());
+    tray.setContextMenu(this.#getTrayMenu(this));
     tray.show();
-    global.tray = tray; // prevent Qt gc
+
     this.setWindowFlag(WindowType.FramelessWindowHint, true);
     this.setWindowFlag(WindowType.WindowStaysOnTopHint, true);
     this.setWindowFlag(WindowType.WindowTransparentForInput, true);
@@ -78,8 +80,8 @@ class MainWindow extends QMainWindow {
     this.lyricsFinderWindow = new LyricsFinderWindow();
   }
 
-  #getTrayMenu() {
-    const menu = new QMenu();
+  #getTrayMenu(parent: QWidget) {
+    const menu = new QMenu(parent);
 
     const settingsAction = menu.addAction('Lyrics');
     settingsAction.addEventListener('triggered', () => {
@@ -93,7 +95,15 @@ class MainWindow extends QMainWindow {
     });
 
     menu.addSeparator();
+    const experimentalLyricParser = menu.addAction('Use Experimental Title Parser');
+    experimentalLyricParser.setCheckable(true);
+    experimentalLyricParser.setChecked(config.experimental.titleParser);
+    experimentalLyricParser.addEventListener('triggered', () => {
+      config.experimental.titleParser = experimentalLyricParser.isChecked();
+      ConfigApi.save();
+    });
 
+    menu.addSeparator();
     api.plugins.forEach((plugin) => {
       plugin.configureMenu?.(ConfigApi, menu);
     });
