@@ -11,7 +11,6 @@ import {
   QIcon,
   WindowType
 } from '@nodegui/nodegui';
-import alsong from 'alsong';
 import Alspotify from '../Alspotify';
 import LyricsMapper from '../LyricsMapper';
 import NowPlayingView from '../components/NowPlayingView';
@@ -245,9 +244,8 @@ class LyricsFinderWindow extends QMainWindow {
   }
 
   async search(artist: string, title: string, duration: number) {
-    const result = await alsong(artist, title, {
-      playtime: duration,
-    }).catch(() => []) as Awaited<ReturnType<typeof alsong.getLyricListByArtistName>>;
+    // Deleted by compliance
+    const result = [];
 
     this.searchResultItems.forEach((item, index) => {
       if (result[index]) {

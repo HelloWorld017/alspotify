@@ -1,7 +1,6 @@
 import cors from '@koa/cors';
 import { QApplication, QMenu } from '@nodegui/nodegui';
 import Logger from '@ptkdev/logger';
-import alsong from 'alsong';
 import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 import Router from 'koa-router';
@@ -207,23 +206,9 @@ class Alspotify {
       let lyric: Record<string, string[]>;
 
       if (!LyricsMapper().get(this.info.coverUrl)) {
-        lyric = await alsong(this.info.artist, this.info.title, {
-          playtime: Number(this.info.duration),
-        }).then((lyricItems) => {
-          logger.info(
-            `Retrieved alsong info: ${lyricItems[0].artist} - ${lyricItems[0].title}`
-          );
-          return alsong.getLyricById(lyricItems[0].lyricId);
-        })
-          .then((lyricData) => lyricData.lyric)
-          .catch((it) => {
-            logger.error(String(it));
-            if (typeof spotifyLyric !== 'object') return {};
-
-            return spotifyLyric;
-          });
+        // Deleted by compliance
       } else {
-        lyric = (await alsong.getLyricById(LyricsMapper().get(this.info.coverUrl))).lyric;
+        // Deleted by compliance
       }
 
       lyric['0'] ??= [];
