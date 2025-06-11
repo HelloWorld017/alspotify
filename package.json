@@ -1,7 +1,7 @@
 {
   "name": "alspotify",
   "version": "1.0.0",
-  "description": "Show alsong lyric on spotify",
+  "description": "Show egg lyric on spotify",
   "main": "app/index.ts",
   "scripts": {
     "start": "qode ./app/dev-entry.js",
@@ -15,7 +15,6 @@
     "url": "git+https://github.com/HelloWorld017/alspotify.git"
   },
   "keywords": [
-    "alsong",
     "spotify"
   ],
   "author": "Khinenw",
@@ -29,7 +28,6 @@
     "@nodegui/nodegui": "^0.61.0",
     "@nodegui/qode": "^18.12.1",
     "@ptkdev/logger": "^1.8.0",
-    "alsong": "^3.0.1",
     "body-parser": "^1.20.1",
     "cors": "^2.8.5",
     "deepmerge": "^4.3.1",
